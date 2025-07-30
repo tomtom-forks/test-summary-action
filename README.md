@@ -146,6 +146,9 @@ Options are specified on the [`with` map](https://docs.github.com/en/actions/usi
       show: "fail, skip"
   ```
 
+* **`summary-title`: the summary title** (optional)
+  Title for the summary section. If not provided, defaults to "Test failures/results" or "Skipped/Passing tests" depending on the show input.
+
 FAQ
 ---
 * **How is the summary graphic generated? Does any of my data ever leave GitHub?**  
