@@ -28,18 +28,20 @@ export function markFlakyTests(result: TestResult, flakyTestsJsonPath: any): Tes
             if (matchingCase) {
                 console.log(`Found matching case: ${matchingCase.name}`);
                 matchingCase.flaky = true; // Mark the case as flaky
+                matchingCase.flakyTestTicket = flakyTest.jira_ticket_url; // Set the ticket if available
             }
         }
     }
 
     // Sort the test cases within each suite: flaky=false cases first
     result.suites.forEach((suite) => {
+        console.log(`Sorting cases in suite: ${suite.name}`);
+        console.log(suite.cases);
         suite.cases.sort((a, b) => {
             const flakyA = a.flaky;
             const flakyB = b.flaky;
             return Number(flakyA) - Number(flakyB);
         });
     });
-    console.log(result.suites[0].cases);
     return result;
   }

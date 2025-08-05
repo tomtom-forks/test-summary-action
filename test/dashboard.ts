@@ -32,7 +32,7 @@ describe("dashboard", async () => {
                 }
             ]
         }
-        const actual = dashboardResults(result, TestStatus.Fail)
+        const actual = dashboardResults(result, TestStatus.Fail, )
         expect(actual).contains("name escaped &lt;properly&gt;")
         expect(actual).contains("description escaped &quot;properly&quot;")
         expect(actual).contains("another name escaped &apos;properly&apos;")
@@ -143,28 +143,13 @@ describe("dashboard", async () => {
                 { 
                     name: "TestSuite2",
                     cases: [
-                        {
-                            status: TestStatus.Fail,
-                            name: 'test4',
-                            description: 'test',
-                            message: 'expected:<99> but was:<98>',
-                            details: 'junit.framework.AssertionFailedError: expected:<99> but was:<98>\n' +
-                              '\tat test.failsTestSix(Unknown Source)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
-                            duration: '0.005',
-                            flaky: false
-                        }
+                    
                     ]
                 }
             ]
         }
         let actual = dashboardSummary(result, TestStatus.Fail, "")
-        actual += dashboardResults(result, TestStatus.Fail)
+        actual += dashboardResults(result, TestStatus.Fail, true)
         console.log(actual) 
         expect(actual).contains("[FLAKY]")
 

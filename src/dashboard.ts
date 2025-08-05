@@ -35,32 +35,38 @@ export function dashboardSummary(result: TestResult, show: number, summaryTitleI
     return summaryTitle + `<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`
 }
 
-export function dashboardResults(result: TestResult, show: number, flakyTestsTitles: boolean = false ): string {
+export function dashboardResults(result: TestResult, show: number, flakyTestsInfo: boolean = false): string {
     let results = ``
     let count = 0
 
     for (const suite of result.suites) {
         let table = "<table>"
+        let suiteHeader = ``
         if (suite.name) {
-        table += `<tr><th align="left">Test Suite: ${escapeHTML(suite.name)}</th></tr>`
+            suiteHeader = `<tr><th align="left">Test Suite: ${escapeHTML(suite.name)}</th></tr>`
         }
-
+        table += suiteHeader
         for (const testcase of suite.cases) {
             if (show !== 0 && (show & testcase.status) === 0) {
                 continue
             }
 
-            table += "<tr><td><ul>"
+            table += "<tr><td>"
 
             const icon = statusIcon(testcase.status)
             if (icon) {
                 table += icon
                 table += "&nbsp; "
             }
-            
-            if (testcase.flaky) {
-                  table += "[FLAKY] "
+
+            if (flakyTestsInfo && testcase.flaky) {
+                if (testcase.flakyTestTicket) {
+                    table += `<a href="${testcase.flakyTestTicket}" target="_blank">[FLAKY] </a> `
                 }
+                else {
+                    table += "[FLAKY] "
+                }
+            }
             table += escapeHTML(testcase.name || unnamedTestCase)
 
             if (testcase.description) {
@@ -89,8 +95,14 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsTit
             count++
         }
       table += "</table>"
-      results += table
 
+      if ( table !== `<table>${suiteHeader}</table>` ) {
+          results += table
+      }
+    }
+
+    if (flakyTestsInfo) {
+        results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available. Flaky tests are unstable tests that sometimes fail and sometimes pass. These tests do not cause pipelines to fail since their behavior is not consistent.</p>`
     }
 
     results += `<tr><td><sub>${footer}</sub></td></tr>`
