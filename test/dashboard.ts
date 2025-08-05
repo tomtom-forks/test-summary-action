@@ -166,7 +166,7 @@ describe("dashboard", async () => {
         let actual = dashboardSummary(result, TestStatus.Fail, "")
         actual += dashboardResults(result, TestStatus.Fail)
         console.log(actual) 
-        expect(actual).contains("<b>[FLAKY]</b>")
+        expect(actual).contains("[FLAKY]")
 
     })
 

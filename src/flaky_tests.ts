@@ -3,6 +3,8 @@ import * as core from "@actions/core"
 
 import { TestSuite, TestResult } from "./test_parser"
 
+// This is the maximum length for a VARCHAR in PostgreSQL, which is used to store test case names for flaky tests.
+const MAX_LONG_VARCHAR_LENGTH = 65535;
 
 export function markFlakyTests(result: TestResult, flakyTestsJsonPath: any): TestResult {
   if (!fs.existsSync(flakyTestsJsonPath)) {
@@ -21,8 +23,7 @@ export function markFlakyTests(result: TestResult, flakyTestsJsonPath: any): Tes
         if (matchingSuite) {
             console.log(`Marking flaky test: ${flakyTest.name} in suite: ${matchingSuite.name}`);
             const matchingCase = matchingSuite.cases.find((testCase) =>
-                testCase.name === flakyTest.name && testCase.description === flakyTest.class
-            );
+                (testCase.name?.slice(0, MAX_LONG_VARCHAR_LENGTH) === flakyTest.name) && testCase.description === flakyTest.class);
 
             if (matchingCase) {
                 console.log(`Found matching case: ${matchingCase.name}`);
