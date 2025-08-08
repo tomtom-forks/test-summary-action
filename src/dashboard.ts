@@ -59,6 +59,10 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
                 table += "&nbsp; "
             }
 
+            if (testcase.status === TestStatus.Fail) {
+                table += `<b>(${testcase.fail_count}/${testcase.run_count} attempts failed)</b>&nbsp;`
+            }
+
             if (flakyTestsInfo && testcase.flaky) {
                 if (testcase.flakyTestTicket) {
                     table += `<a href="${testcase.flakyTestTicket}" target="_blank">[FLAKY] </a> `
@@ -74,7 +78,7 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
                 table += escapeHTML(testcase.description)
             }
 
-            if (testcase.message || testcase.details) {
+            if ((testcase.message && testcase.message.trim() !== '') || testcase.details) {
                 table += "<br/>\n"
 
                 if (testcase.message) {
@@ -85,7 +89,8 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
 
                 if (testcase.details) {
                     table += "<details><pre><code>"
-                    table += escapeHTML(testcase.details)
+                    const cleanedDetails = testcase.details.replace(/\n\s*\n/g, '\n');
+                    table += escapeHTML(cleanedDetails)
                     table += "</code></pre></details>"
                 }
             }
