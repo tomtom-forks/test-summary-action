@@ -14,19 +14,19 @@ describe("dashboard", async () => {
                             status: TestStatus.Fail,
                             name: "name escaped <properly>", // "<" and ">" require escaping
                             description: "description escaped \"properly\"", // double quotes require escaping
-                            flaky: false,
+                            run_count: 1
                         },
                         {
                             status: TestStatus.Fail,
                             name: "another name escaped 'properly'", // single quotes require escaping
                             description: "another description escaped & properly", // ampersand requires escaping
-                            flaky: false,
+                            run_count: 1
                         },
                         {
                             status: TestStatus.Fail,
                             name: "entities ' are & escaped < in > proper & order",
                             description: "order is important in a multi-pass replacement",
-                            flaky: false,
+                            run_count: 1
                         }
                     ]
                 }
@@ -48,7 +48,7 @@ describe("dashboard", async () => {
                     cases: [
                         {
                             status: TestStatus.Fail,
-                            flaky: false,
+                            run_count: 1
                             // <-- no name
                         }
                     ]
@@ -70,7 +70,7 @@ describe("dashboard", async () => {
                             name: "Test",
                             message: "message escaped <properly>",
                             details: "details escaped <properly>",
-                            flaky: false
+                            run_count: 1
                         }
                     ]
                 }
@@ -104,7 +104,8 @@ describe("dashboard", async () => {
                               '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
                               '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
                             duration: '0.005',
-                            flaky: false
+                            run_count: 1,
+                            fail_count: 1,
                         },
                         {
                             status: TestStatus.Fail,
@@ -120,7 +121,8 @@ describe("dashboard", async () => {
                               '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
                               '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
                             duration: '0.005',
-                            flaky: true
+                            run_count: 1,
+                            fail_count: 1,
                         },
                         {
                             status: TestStatus.Fail,
@@ -136,14 +138,31 @@ describe("dashboard", async () => {
                               '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
                               '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
                             duration: '0.005',
-                            flaky: true
+                            run_count: 1,
+                            fail_count: 1,
                           },
                     ]
                 },
                 { 
                     name: "TestSuite2",
                     cases: [
-                    
+                        {
+                            status: TestStatus.Fail,
+                            name: 'test4',
+                            description: 'test',
+                            message: 'expected:<99> but was:<98>',
+                            details: 'junit.framework.AssertionFailedError: expected:<99> but was:<98>\n' +
+                              '\tat test.failsTestSix(Unknown Source)\n' +
+                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
+                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
+                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n' +
+                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
+                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
+                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
+                            duration: '0.005',
+                            run_count: 1,
+                            fail_count: 1,
+                        }
                     ]
                 }
             ]

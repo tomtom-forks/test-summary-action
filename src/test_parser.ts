@@ -1,3 +1,4 @@
+import { fail } from "assert"
 import * as fs from "fs"
 import * as util from "util"
 
@@ -37,7 +38,9 @@ export interface TestCase {
     message?: string
     details?: string
     duration?: string
-    flaky: boolean
+    run_count: number
+    fail_count?: number
+    flaky?: boolean
     flakyTestTicket?: string
 }
 
@@ -186,9 +189,10 @@ export async function parseTap(data: string): Promise<TestResult> {
             name: name,
             description: description,
             details: details,
-            flaky: false,
-            flakyTestTicket: undefined
-
+            run_count: 0,
+            fail_count: 0,
+            flaky: false, // Flaky tests will be marked later
+            flakyTestTicket: undefined // This will be set later if flaky tests are marked
         })
     }
 
@@ -273,6 +277,8 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
                 message: message,
                 details: details,
                 duration: duration,
+                run_count: 1,
+                fail_count: 0,
                 flaky: false, // Flaky tests will be marked later
                 flakyTestTicket: undefined // This will be set later if flaky tests are marked
             })

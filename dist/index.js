@@ -47,9 +47,11 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
     let count = 0;
     for (const suite of result.suites) {
         let table = "<table>";
+        let suiteHeader = ``;
         if (suite.name) {
-            table += `<tr><th align="left">Test Suite: ${(0, escape_html_1.default)(suite.name)}</th></tr>`;
+            suiteHeader = `<tr><th align="left">Test Suite: ${(0, escape_html_1.default)(suite.name)}</th></tr>`;
         }
+        table += suiteHeader;
         for (const testcase of suite.cases) {
             if (show !== 0 && (show & testcase.status) === 0) {
                 continue;
@@ -59,6 +61,9 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
             if (icon) {
                 table += icon;
                 table += "&nbsp; ";
+            }
+            if (testcase.status === test_parser_1.TestStatus.Fail) {
+                table += `<b>(${testcase.fail_count}/${testcase.run_count} failed)</b>&nbsp;`;
             }
             if (flakyTestsInfo && testcase.flaky) {
                 if (testcase.flakyTestTicket) {
@@ -90,7 +95,9 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
             count++;
         }
         table += "</table>";
-        results += table;
+        if (table !== `<table>${suiteHeader}</table>`) {
+            results += table;
+        }
     }
     if (flakyTestsInfo) {
         results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available. Flaky tests are unstable tests that sometimes fail and sometimes pass. These tests do not cause pipelines to fail since their behavior is not consistent.</p>`;
@@ -208,13 +215,14 @@ function markFlakyTests(result, flakyTestsJsonPath) {
     }
     // Sort the test cases within each suite: flaky=false cases first
     result.suites.forEach((suite) => {
+        console.log(`Sorting cases in suite: ${suite.name}`);
+        console.log(suite.cases);
         suite.cases.sort((a, b) => {
             const flakyA = a.flaky;
             const flakyB = b.flaky;
             return Number(flakyA) - Number(flakyB);
         });
     });
-    console.log(result.suites[0].cases);
     return result;
 }
 exports.markFlakyTests = markFlakyTests;
@@ -260,6 +268,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getResultsFromPaths = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const util = __importStar(__nccwpck_require__(3837));
 const core = __importStar(__nccwpck_require__(2186));
@@ -267,6 +276,62 @@ const glob = __importStar(__nccwpck_require__(8252));
 const test_parser_1 = __nccwpck_require__(2393);
 const dashboard_1 = __nccwpck_require__(4770);
 const flaky_tests_1 = __nccwpck_require__(6474);
+function getTestCaseKey(testcase) {
+    return `${testcase.name || ""}::${testcase.description || ""}`;
+}
+function getResultsFromPaths(paths) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        const suiteMap = new Map();
+        let total = {
+            counts: { passed: 0, failed: 0, skipped: 0 },
+            suites: [],
+            exception: undefined
+        };
+        for (const path of paths) {
+            const result = yield (0, test_parser_1.parseFile)(path);
+            total.counts.passed += result.counts.passed;
+            total.counts.failed += result.counts.failed;
+            total.counts.skipped += result.counts.skipped;
+            for (const suite of result.suites) {
+                if (!suiteMap.has(suite.name || "")) {
+                    suiteMap.set(suite.name || "", Object.assign(Object.assign({}, suite), { cases: [] }));
+                }
+                const mergedSuite = suiteMap.get(suite.name || "");
+                const testCaseMap = new Map();
+                for (const testcase of mergedSuite.cases) {
+                    testCaseMap.set(getTestCaseKey(testcase), testcase);
+                }
+                for (const testcase of suite.cases) {
+                    const key = getTestCaseKey(testcase);
+                    const existingTestCase = testCaseMap.get(key);
+                    if (existingTestCase) {
+                        if (existingTestCase.status == test_parser_1.TestStatus.Skip)
+                            continue;
+                        existingTestCase.run_count += 1;
+                        if (testcase.status === test_parser_1.TestStatus.Fail) {
+                            existingTestCase.fail_count = (existingTestCase.fail_count || 0) + 1;
+                            existingTestCase.status = test_parser_1.TestStatus.Fail; // Update status to Fail if it was previously not Fail
+                            if (!((_a = existingTestCase.message) === null || _a === void 0 ? void 0 : _a.includes(testcase.message || ""))) {
+                                existingTestCase.message = (existingTestCase.message || "") + `\n${testcase.message || ""}`;
+                            }
+                            if (!((_b = existingTestCase.details) === null || _b === void 0 ? void 0 : _b.includes(testcase.details || ""))) {
+                                existingTestCase.details = (existingTestCase.details || "") + `\n${testcase.details || ""}`;
+                            }
+                        }
+                    }
+                    else {
+                        testCaseMap.set(key, Object.assign(Object.assign({}, testcase), { fail_count: testcase.status === test_parser_1.TestStatus.Fail ? 1 : 0, run_count: testcase.status === test_parser_1.TestStatus.Skip ? 0 : 1 }));
+                    }
+                }
+                mergedSuite.cases = Array.from(testCaseMap.values());
+            }
+        }
+        total.suites = Array.from(suiteMap.values());
+        return total;
+    });
+}
+exports.getResultsFromPaths = getResultsFromPaths;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -329,18 +394,7 @@ function run() {
                 core.debug(showInfo);
             }
             /* Analyze the tests */
-            let total = {
-                counts: { passed: 0, failed: 0, skipped: 0 },
-                suites: [],
-                exception: undefined
-            };
-            for (const path of paths) {
-                const result = yield (0, test_parser_1.parseFile)(path);
-                total.counts.passed += result.counts.passed;
-                total.counts.failed += result.counts.failed;
-                total.counts.skipped += result.counts.skipped;
-                total.suites.push(...result.suites);
-            }
+            let total = yield getResultsFromPaths(paths);
             /* Create and write the output */
             if (flakyTestsJsonPath) {
                 total = (0, flaky_tests_1.markFlakyTests)(total, flakyTestsJsonPath);
@@ -557,8 +611,10 @@ function parseTap(data) {
                 name: name,
                 description: description,
                 details: details,
+                run_count: 0,
+                fail_count: 0,
                 flaky: false,
-                flakyTestTicket: undefined
+                flakyTestTicket: undefined // This will be set later if flaky tests are marked
             });
         }
         suites.push({
@@ -634,6 +690,8 @@ function parseJunitXml(xml) {
                     message: message,
                     details: details,
                     duration: duration,
+                    run_count: 1,
+                    fail_count: 0,
                     flaky: false,
                     flakyTestTicket: undefined // This will be set later if flaky tests are marked
                 });

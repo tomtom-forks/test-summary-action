@@ -59,6 +59,10 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
                 table += "&nbsp; "
             }
 
+            if (testcase.status === TestStatus.Fail) {
+                table += `<b>(${testcase.fail_count}/${testcase.run_count} failed)</b>&nbsp;`
+            }
+
             if (flakyTestsInfo && testcase.flaky) {
                 if (testcase.flakyTestTicket) {
                     table += `<a href="${testcase.flakyTestTicket}" target="_blank">[FLAKY] </a> `
