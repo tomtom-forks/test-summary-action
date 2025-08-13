@@ -3,12 +3,13 @@
   "id": 1,
   "name": "passesTestOne",
   "class": "test",
-  "testsuite": "test",
+  "testsuite": "testsuite-project-name",
   "repository": "go-sdk-android",
   "error": "Multiple error messages have been encountered for this test",
   "test_id": 1,
   "end_date": null,
-  "end_reason": null
+  "end_reason": null,
+  "jira_ticket_url": "https://jira.example.com/browse/TEST-1"
   },
   {
     "id": 2,

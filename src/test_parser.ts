@@ -26,6 +26,7 @@ export interface TestResult {
 
 export interface TestSuite {
     name?: string
+    project?: string
     timestamp?: string
     filename?: string
     cases: TestCase[]
@@ -237,6 +238,15 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
             continue
         }
 
+        // Check if properties exist and get "project" property
+        let project = "";
+        const properties = testsuite.properties?.[0]?.property || [];
+        for (const property of properties) {
+            if (property.$.name === "project") {
+                project = property.$.value;
+            }
+        }
+
         for (const testcase of testsuite.testcase) {
             let status = TestStatus.Pass
 
@@ -286,6 +296,7 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
 
         suites.push({
             name: testsuite.$.name,
+            project: project,
             timestamp: testsuite.$.timestamp,
             filename: testsuite.$.file,
             cases: cases,

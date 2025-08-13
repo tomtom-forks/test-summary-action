@@ -19,7 +19,7 @@ export function markFlakyTests(result: TestResult, flakyTestsJsonPath: any): Tes
     for (const flakyTest of flakyTestsJson) {
         const suiteName = flakyTest.testsuite;
 
-        const matchingSuite = result.suites.find((suite) => suite.name === suiteName);
+        const matchingSuite = result.suites.find((suite) => suite.project === suiteName || suite.name === suiteName);
         if (matchingSuite) {
             console.log(`Marking flaky test: ${flakyTest.name} in suite: ${matchingSuite.name}`);
             const matchingCase = matchingSuite.cases.find((testCase) =>

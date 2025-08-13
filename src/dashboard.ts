@@ -60,7 +60,7 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
             }
 
             if (testcase.status === TestStatus.Fail) {
-                table += `<b>(${testcase.fail_count}/${testcase.run_count} failed)</b>&nbsp;`
+                table += `<b>(${testcase.fail_count}/${testcase.run_count} attempts failed)</b>&nbsp;`
             }
 
             if (flakyTestsInfo && testcase.flaky) {
@@ -78,7 +78,7 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
                 table += escapeHTML(testcase.description)
             }
 
-            if (testcase.message || testcase.details) {
+            if ((testcase.message && testcase.message !== '\n') || testcase.details) {
                 table += "<br/>\n"
 
                 if (testcase.message) {

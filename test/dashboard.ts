@@ -89,6 +89,7 @@ describe("dashboard", async () => {
             suites: [
                 { 
                     name: "TestSuite1",
+                    project: 'testsuite-project-name',
                     cases: [
                         {
                             status: TestStatus.Fail,
@@ -106,6 +107,8 @@ describe("dashboard", async () => {
                             duration: '0.005',
                             run_count: 1,
                             fail_count: 1,
+                            flaky: true,
+                            flakyTestTicket: "https://jira.example.com/browse/TEST-1"
                         },
                         {
                             status: TestStatus.Fail,
@@ -124,53 +127,15 @@ describe("dashboard", async () => {
                             run_count: 1,
                             fail_count: 1,
                         },
-                        {
-                            status: TestStatus.Fail,
-                            name: 'test3',
-                            description: 'test',
-                            message: 'expected:<99> but was:<98>',
-                            details: 'junit.framework.AssertionFailedError: expected:<99> but was:<98>\n' +
-                              '\tat test.failsTestFive(Unknown Source)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
-                            duration: '0.005',
-                            run_count: 1,
-                            fail_count: 1,
-                          },
                     ]
                 },
-                { 
-                    name: "TestSuite2",
-                    cases: [
-                        {
-                            status: TestStatus.Fail,
-                            name: 'test4',
-                            description: 'test',
-                            message: 'expected:<99> but was:<98>',
-                            details: 'junit.framework.AssertionFailedError: expected:<99> but was:<98>\n' +
-                              '\tat test.failsTestSix(Unknown Source)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
-                            duration: '0.005',
-                            run_count: 1,
-                            fail_count: 1,
-                        }
-                    ]
-                }
             ]
         }
-        let actual = dashboardSummary(result, TestStatus.Fail, "")
-        actual += dashboardResults(result, TestStatus.Fail, true)
+        let actual = dashboardResults(result, TestStatus.Fail, true)
+        const count = (actual.match(/\[FLAKY\]/g) || []).length;
         console.log(actual) 
-        expect(actual).contains("[FLAKY]")
+        expect(actual).contains(`<a href="https://jira.example.com/browse/TEST-1" target="_blank">[FLAKY] </a> `)
+        expect(count).to.equal(2); // Once comes from the footer
 
     })
 

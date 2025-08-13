@@ -76,6 +76,7 @@ describe("junit", async () => {
         expect(result.counts.skipped).to.eql(2)
 
         expect(result.suites.length).to.eql(1)
+        expect(result.suites[0].project).to.eql("testsuite-project-name")
 
         expect(result.suites[0].cases[0].name).to.eql("passesTestOne")
         expect(result.suites[0].cases[1].name).to.eql("passesTestTwo")
@@ -173,8 +174,7 @@ describe("junit", async () => {
         expect(resultUpdated.suites[0].cases[6].flaky).to.eql(false)
         expect(resultUpdated.suites[0].cases[7].flaky).to.eql(false)
         expect(resultUpdated.suites[0].cases[8].flaky).to.eql(true)
+        expect(resultUpdated.suites[0].cases[8].flakyTestTicket).to.eql("https://jira.example.com/browse/TEST-1")
         expect(resultUpdated.suites[0].cases[9].flaky).to.eql(true)
-
-        
     })
 })

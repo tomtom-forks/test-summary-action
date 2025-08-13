@@ -63,7 +63,7 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
                 table += "&nbsp; ";
             }
             if (testcase.status === test_parser_1.TestStatus.Fail) {
-                table += `<b>(${testcase.fail_count}/${testcase.run_count} failed)</b>&nbsp;`;
+                table += `<b>(${testcase.fail_count}/${testcase.run_count} attempts failed)</b>&nbsp;`;
             }
             if (flakyTestsInfo && testcase.flaky) {
                 if (testcase.flakyTestTicket) {
@@ -78,7 +78,7 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
                 table += ": ";
                 table += (0, escape_html_1.default)(testcase.description);
             }
-            if (testcase.message || testcase.details) {
+            if ((testcase.message && testcase.message !== '\n') || testcase.details) {
                 table += "<br/>\n";
                 if (testcase.message) {
                     table += "<pre><code>";
@@ -202,7 +202,7 @@ function markFlakyTests(result, flakyTestsJsonPath) {
     console.log(flakyTestsJson);
     for (const flakyTest of flakyTestsJson) {
         const suiteName = flakyTest.testsuite;
-        const matchingSuite = result.suites.find((suite) => suite.name === suiteName);
+        const matchingSuite = result.suites.find((suite) => suite.project === suiteName || suite.name === suiteName);
         if (matchingSuite) {
             console.log(`Marking flaky test: ${flakyTest.name} in suite: ${matchingSuite.name}`);
             const matchingCase = matchingSuite.cases.find((testCase) => { var _a; return (((_a = testCase.name) === null || _a === void 0 ? void 0 : _a.slice(0, MAX_LONG_VARCHAR_LENGTH)) === flakyTest.name) && testCase.description === flakyTest.class; });
@@ -324,6 +324,7 @@ function getResultsFromPaths(paths) {
                         testCaseMap.set(key, Object.assign(Object.assign({}, testcase), { fail_count: testcase.status === test_parser_1.TestStatus.Fail ? 1 : 0, run_count: testcase.status === test_parser_1.TestStatus.Skip ? 0 : 1 }));
                     }
                 }
+                console.log(`Merged suite: ${mergedSuite.name}, Cases: ${mergedSuite.cases}`);
                 mergedSuite.cases = Array.from(testCaseMap.values());
             }
         }
@@ -630,6 +631,7 @@ function parseTap(data) {
 }
 exports.parseTap = parseTap;
 function parseJunitXml(xml) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let testsuites;
         if ('testsuites' in xml) {
@@ -654,6 +656,14 @@ function parseJunitXml(xml) {
             const cases = [];
             if (!Array.isArray(testsuite.testcase)) {
                 continue;
+            }
+            // Check if properties exist and get "project" property
+            let project = "";
+            const properties = ((_b = (_a = testsuite.properties) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.property) || [];
+            for (const property of properties) {
+                if (property.$.name === "project") {
+                    project = property.$.value;
+                }
             }
             for (const testcase of testsuite.testcase) {
                 let status = TestStatus.Pass;
@@ -698,6 +708,7 @@ function parseJunitXml(xml) {
             }
             suites.push({
                 name: testsuite.$.name,
+                project: project,
                 timestamp: testsuite.$.timestamp,
                 filename: testsuite.$.file,
                 cases: cases,
