@@ -52,11 +52,12 @@ export async function getResultsFromPaths(paths: string[]): Promise<TestResult> 
                         existingTestCase.fail_count = (existingTestCase.fail_count || 0) + 1;
                         existingTestCase.status = TestStatus.Fail; // Update status to Fail if it was previously not Fail
 
-                        if (!existingTestCase.message?.includes(testcase.message || "")) {
+                        if (testcase.message && !existingTestCase.message?.includes(testcase.message)) {
                             existingTestCase.message = (existingTestCase.message || "") + `\n${testcase.message || ""}`;
                         }
-                        if (!existingTestCase.details?.includes(testcase.details || "")) {
-                            existingTestCase.details = (existingTestCase.details || "") + `\n${testcase.details || ""}`;
+                        if (testcase.details && !existingTestCase.details?.includes(testcase.details || "")) {
+                            const separator = "\n---\n";
+                            existingTestCase.details = (existingTestCase.details || "") + separator + (testcase.details || "");
                         }
                     }
                 } else {

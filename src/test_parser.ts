@@ -287,7 +287,7 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
                 message: message,
                 details: details,
                 duration: duration,
-                run_count: 1,
+                run_count: 0,
                 fail_count: 0,
                 flaky: false, // Flaky tests will be marked later
                 flakyTestTicket: undefined // This will be set later if flaky tests are marked

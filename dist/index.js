@@ -78,7 +78,7 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
                 table += ": ";
                 table += (0, escape_html_1.default)(testcase.description);
             }
-            if ((testcase.message && testcase.message !== '\n') || testcase.details) {
+            if ((testcase.message && testcase.message.trim() !== '') || testcase.details) {
                 table += "<br/>\n";
                 if (testcase.message) {
                     table += "<pre><code>";
@@ -87,7 +87,8 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
                 }
                 if (testcase.details) {
                     table += "<details><pre><code>";
-                    table += (0, escape_html_1.default)(testcase.details);
+                    const cleanedDetails = testcase.details.replace(/\n\s*\n/g, '\n');
+                    table += (0, escape_html_1.default)(cleanedDetails);
                     table += "</code></pre></details>";
                 }
             }
@@ -312,11 +313,12 @@ function getResultsFromPaths(paths) {
                         if (testcase.status === test_parser_1.TestStatus.Fail) {
                             existingTestCase.fail_count = (existingTestCase.fail_count || 0) + 1;
                             existingTestCase.status = test_parser_1.TestStatus.Fail; // Update status to Fail if it was previously not Fail
-                            if (!((_a = existingTestCase.message) === null || _a === void 0 ? void 0 : _a.includes(testcase.message || ""))) {
+                            if (testcase.message && !((_a = existingTestCase.message) === null || _a === void 0 ? void 0 : _a.includes(testcase.message))) {
                                 existingTestCase.message = (existingTestCase.message || "") + `\n${testcase.message || ""}`;
                             }
-                            if (!((_b = existingTestCase.details) === null || _b === void 0 ? void 0 : _b.includes(testcase.details || ""))) {
-                                existingTestCase.details = (existingTestCase.details || "") + `\n${testcase.details || ""}`;
+                            if (testcase.details && !((_b = existingTestCase.details) === null || _b === void 0 ? void 0 : _b.includes(testcase.details || ""))) {
+                                const separator = "\n---\n";
+                                existingTestCase.details = (existingTestCase.details || "") + separator + (testcase.details || "");
                             }
                         }
                     }
@@ -700,7 +702,7 @@ function parseJunitXml(xml) {
                     message: message,
                     details: details,
                     duration: duration,
-                    run_count: 1,
+                    run_count: 0,
                     fail_count: 0,
                     flaky: false,
                     flakyTestTicket: undefined // This will be set later if flaky tests are marked

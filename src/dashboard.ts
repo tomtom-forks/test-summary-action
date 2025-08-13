@@ -65,7 +65,7 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
 
             if (flakyTestsInfo && testcase.flaky) {
                 if (testcase.flakyTestTicket) {
-                    table += `x`
+                    table += `<a href="${testcase.flakyTestTicket}" target="_blank">[FLAKY] </a> `
                 }
                 else {
                     table += "[FLAKY] "
@@ -89,7 +89,8 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
 
                 if (testcase.details) {
                     table += "<details><pre><code>"
-                    table += escapeHTML(testcase.details)
+                    const cleanedDetails = testcase.details.replace(/\n\s*\n/g, '\n');
+                    table += escapeHTML(cleanedDetails)
                     table += "</code></pre></details>"
                 }
             }
