@@ -107,7 +107,9 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
     }
 
     if (flakyTestsInfo) {
-        results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available. Flaky tests are unstable tests that sometimes fail and sometimes pass. These tests do not cause pipelines to fail since their behavior is not consistent.</p>`
+        results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available.`+
+        ` Flaky tests are unstable tests that sometimes fail and sometimes pass.`+
+        ` These tests do not cause pipelines to fail, unless the failure is due to a system crash, and are not retried since their behavior is not consistent.</p>`
     }
 
     results += `<tr><td><sub>${footer}</sub></td></tr>`

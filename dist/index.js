@@ -101,7 +101,9 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
         }
     }
     if (flakyTestsInfo) {
-        results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available. Flaky tests are unstable tests that sometimes fail and sometimes pass. These tests do not cause pipelines to fail since their behavior is not consistent.</p>`;
+        results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available.` +
+            ` Flaky tests are unstable tests that sometimes fail and sometimes pass.` +
+            ` These tests do not cause pipelines to fail, unless the failure is due to a system crash, and are not retried since their behavior is not consistent.</p>`;
     }
     results += `<tr><td><sub>${footer}</sub></td></tr>`;
     if (count === 0) {
@@ -295,10 +297,10 @@ function getResultsFromPaths(paths) {
             total.counts.failed += result.counts.failed;
             total.counts.skipped += result.counts.skipped;
             for (const suite of result.suites) {
-                if (!suiteMap.has(suite.name || "")) {
-                    suiteMap.set(suite.name || "", Object.assign(Object.assign({}, suite), { cases: [] }));
+                if (!suiteMap.has(suite.project || suite.name || "")) {
+                    suiteMap.set(suite.project || suite.name || "", Object.assign(Object.assign({}, suite), { cases: [] }));
                 }
-                const mergedSuite = suiteMap.get(suite.name || "");
+                const mergedSuite = suiteMap.get(suite.project || suite.name || "");
                 const testCaseMap = new Map();
                 for (const testcase of mergedSuite.cases) {
                     testCaseMap.set(getTestCaseKey(testcase), testcase);
