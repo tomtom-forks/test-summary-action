@@ -133,7 +133,6 @@ describe("dashboard", async () => {
         }
         let actual = dashboardResults(result, TestStatus.Fail, true)
         const count = (actual.match(/\[FLAKY\]/g) || []).length;
-        console.log(actual) 
         expect(actual).contains(`<a href="https://jira.example.com/browse/TEST-1" target="_blank">[FLAKY] </a> `)
         expect(count).to.equal(2); // Once comes from the footer
 

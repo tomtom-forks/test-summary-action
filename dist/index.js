@@ -202,7 +202,6 @@ function markFlakyTests(result, flakyTestsJsonPath) {
     }
     const data = fs.readFileSync(flakyTestsJsonPath, "utf-8");
     const flakyTestsJson = JSON.parse(data);
-    console.log(flakyTestsJson);
     for (const flakyTest of flakyTestsJson) {
         const suiteName = flakyTest.testsuite;
         const matchingSuite = result.suites.find((suite) => suite.project === suiteName || suite.name === suiteName);
@@ -218,8 +217,6 @@ function markFlakyTests(result, flakyTestsJsonPath) {
     }
     // Sort the test cases within each suite: flaky=false cases first
     result.suites.forEach((suite) => {
-        console.log(`Sorting cases in suite: ${suite.name}`);
-        console.log(suite.cases);
         suite.cases.sort((a, b) => {
             const flakyA = a.flaky;
             const flakyB = b.flaky;
@@ -328,7 +325,6 @@ function getResultsFromPaths(paths) {
                         testCaseMap.set(key, Object.assign(Object.assign({}, testcase), { fail_count: testcase.status === test_parser_1.TestStatus.Fail ? 1 : 0, run_count: testcase.status === test_parser_1.TestStatus.Skip ? 0 : 1 }));
                     }
                 }
-                console.log(`Merged suite: ${mergedSuite.name}, Cases: ${mergedSuite.cases}`);
                 mergedSuite.cases = Array.from(testCaseMap.values());
             }
         }

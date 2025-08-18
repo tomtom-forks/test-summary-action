@@ -67,8 +67,6 @@ export async function getResultsFromPaths(paths: string[]): Promise<TestResult> 
                     });
                 }
             }
-            console.log(`Merged suite: ${mergedSuite.name}, Cases: ${mergedSuite.cases}`);
-
             mergedSuite.cases = Array.from(testCaseMap.values());
         }
     }
