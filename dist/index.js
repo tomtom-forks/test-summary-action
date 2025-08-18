@@ -292,10 +292,10 @@ function getResultsFromPaths(paths) {
             total.counts.failed += result.counts.failed;
             total.counts.skipped += result.counts.skipped;
             for (const suite of result.suites) {
-                if (!suiteMap.has(suite.name || "")) {
-                    suiteMap.set(suite.name || "", Object.assign(Object.assign({}, suite), { cases: [] }));
+                if (!suiteMap.has(suite.project || suite.name || "")) {
+                    suiteMap.set(suite.project || suite.name || "", Object.assign(Object.assign({}, suite), { cases: [] }));
                 }
-                const mergedSuite = suiteMap.get(suite.name || "");
+                const mergedSuite = suiteMap.get(suite.project || suite.name || "");
                 const testCaseMap = new Map();
                 for (const testcase of mergedSuite.cases) {
                     testCaseMap.set(getTestCaseKey(testcase), testcase);

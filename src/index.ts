@@ -6,7 +6,6 @@ import * as glob from "glob-promise"
 import { TestResult, TestSuite, TestStatus, parseFile, TestCase } from "./test_parser"
 import { dashboardResults, dashboardSummary } from "./dashboard"
 import { markFlakyTests } from "./flaky_tests"
-import { get } from "http"
 
 function getTestCaseKey(testcase: TestCase): string {
     return `${testcase.name || ""}::${testcase.description || ""}`;
@@ -28,13 +27,13 @@ export async function getResultsFromPaths(paths: string[]): Promise<TestResult> 
         total.counts.skipped += result.counts.skipped
 
         for (const suite of result.suites) {
-            if (!suiteMap.has(suite.name || "")) {
-                suiteMap.set(suite.name || "", {
+            if (!suiteMap.has(suite.project || suite.name || "")) {
+                suiteMap.set(suite.project || suite.name || "", {
                     ...suite,
                     cases: []
                 });
             }
-            const mergedSuite = suiteMap.get(suite.name || "")!;
+            const mergedSuite = suiteMap.get(suite.project || suite.name || "")!;
             const testCaseMap = new Map<string, TestCase>();
 
             for (const testcase of mergedSuite.cases) {
