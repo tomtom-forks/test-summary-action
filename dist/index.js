@@ -20,7 +20,7 @@ const skipIconUrl = "https://svg.test-summary.com/icon/skip.svg?s=12";
 // not used: const noneIconUrl = 'https://svg.test-summary.com/icon/none.svg?s=12'
 const unnamedTestCase = "<no name>";
 const footer = `This test report was produced by the <a href="https://github.com/test-summary/action">test-summary action</a>.&nbsp; Made with ❤️ in Cambridge.`;
-function dashboardSummary(result, show, summaryTitleInput) {
+function dashboardSummary(result, show, summaryTitleInput, runUrl) {
     const count = result.counts;
     let summary = "";
     if (count.passed > 0) {
@@ -32,14 +32,11 @@ function dashboardSummary(result, show, summaryTitleInput) {
     if (count.skipped > 0) {
         summary += `${summary ? ", " : ""}${count.skipped} skipped`;
     }
-    let summaryTitle = "";
-    if (summaryTitleInput) {
-        summaryTitle += `<h2>${summaryTitleInput}</h2>`;
-    }
-    else {
-        summaryTitle += `<h2>${statusTitle(show)}</h2>`;
-    }
-    return summaryTitle + `<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`;
+    let summaryTitle = summaryTitleInput || statusTitle(show);
+    const summaryTitleHtml = runUrl
+        ? `<h2><a href="${runUrl}" target="_blank">${summaryTitle}</a></h2>`
+        : `<h2>${summaryTitle}</h2>`;
+    return `${summaryTitleHtml}<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`;
 }
 exports.dashboardSummary = dashboardSummary;
 function dashboardResults(result, show, flakyTestsInfo = false) {
@@ -339,6 +336,7 @@ function run() {
             const showList = core.getInput("show");
             const summaryTitle = core.getInput("summary-title") || "";
             const flakyTestsJsonPath = core.getInput("flaky-tests-json") || "";
+            const runUrl = core.getInput("run-url") || "";
             /*
              * Given paths may either be an individual path (eg "foo.xml"),
              * a path glob (eg "**TEST-*.xml"), or may be newline separated
@@ -398,7 +396,7 @@ function run() {
             if (flakyTestsJsonPath) {
                 total = (0, flaky_tests_1.markFlakyTests)(total, flakyTestsJsonPath);
             }
-            let output = (0, dashboard_1.dashboardSummary)(total, show, summaryTitle);
+            let output = (0, dashboard_1.dashboardSummary)(total, show, summaryTitle, runUrl);
             if (show) {
                 output += (0, dashboard_1.dashboardResults)(total, show, flakyTestsJsonPath != "");
             }
