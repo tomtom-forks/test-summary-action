@@ -13,31 +13,35 @@ describe("dashboard", async () => {
                         {
                             status: TestStatus.Fail,
                             name: "name escaped <properly>", // "<" and ">" require escaping
-                            description: "description escaped \"properly\"", // double quotes require escaping
+                            description: 'description escaped "properly"', // double quotes require escaping
                             run_count: 1
                         },
                         {
                             status: TestStatus.Fail,
                             name: "another name escaped 'properly'", // single quotes require escaping
-                            description: "another description escaped & properly", // ampersand requires escaping
+                            description:
+                                "another description escaped & properly", // ampersand requires escaping
                             run_count: 1
                         },
                         {
                             status: TestStatus.Fail,
                             name: "entities ' are & escaped < in > proper & order",
-                            description: "order is important in a multi-pass replacement",
+                            description:
+                                "order is important in a multi-pass replacement",
                             run_count: 1
                         }
                     ]
                 }
             ]
         }
-        const actual = dashboardResults(result, TestStatus.Fail, )
+        const actual = dashboardResults(result, TestStatus.Fail)
         expect(actual).contains("name escaped &lt;properly&gt;")
         expect(actual).contains("description escaped &quot;properly&quot;")
         expect(actual).contains("another name escaped &apos;properly&apos;")
         expect(actual).contains("another description escaped &amp; properly")
-        expect(actual).contains("entities &apos; are &amp; escaped &lt; in &gt; proper &amp; order")
+        expect(actual).contains(
+            "entities &apos; are &amp; escaped &lt; in &gt; proper &amp; order"
+        )
     })
 
     it("uses <no name> for test cases without name", async () => {
@@ -83,59 +87,62 @@ describe("dashboard", async () => {
         expect(actual).contains("details escaped &lt;properly&gt;")
     })
 
-        it("includes flaky test info", async () => {
+    it("includes flaky test info", async () => {
         const result: TestResult = {
             counts: { passed: 0, failed: 1, skipped: 0 },
             suites: [
-                { 
+                {
                     name: "TestSuite1",
-                    project: 'testsuite-project-name',
+                    project: "testsuite-project-name",
                     cases: [
                         {
                             status: TestStatus.Fail,
-                            name: 'test1',
-                            description: 'test',
-                            message: 'expected:<99> but was:<98>',
-                            details: 'junit.framework.AssertionFailedError: expected:<99> but was:<98>\n' +
-                              '\tat test.failsTestSix(Unknown Source)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
-                            duration: '0.005',
+                            name: "test1",
+                            description: "test",
+                            message: "expected:<99> but was:<98>",
+                            details:
+                                "junit.framework.AssertionFailedError: expected:<99> but was:<98>\n" +
+                                "\tat test.failsTestSix(Unknown Source)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n" +
+                                "\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n" +
+                                "\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n",
+                            duration: "0.005",
                             run_count: 1,
                             fail_count: 1,
                             flaky: true,
-                            flakyTestTicket: "https://jira.example.com/browse/TEST-1"
+                            flakyTestTicket:
+                                "https://jira.example.com/browse/TEST-1"
                         },
                         {
                             status: TestStatus.Fail,
-                            name: 'test2',
-                            description: 'test',
-                            message: 'expected:<99> but was:<98>',
-                            details: 'junit.framework.AssertionFailedError: expected:<99> but was:<98>\n' +
-                              '\tat test.failsTestFive(Unknown Source)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n' +
-                              '\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n' +
-                              '\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n',
-                            duration: '0.005',
+                            name: "test2",
+                            description: "test",
+                            message: "expected:<99> but was:<98>",
+                            details:
+                                "junit.framework.AssertionFailedError: expected:<99> but was:<98>\n" +
+                                "\tat test.failsTestFive(Unknown Source)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n" +
+                                "\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n" +
+                                "\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n" +
+                                "\tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n",
+                            duration: "0.005",
                             run_count: 1,
-                            fail_count: 1,
-                        },
+                            fail_count: 1
+                        }
                     ]
-                },
+                }
             ]
         }
         let actual = dashboardResults(result, TestStatus.Fail, true)
-        const count = (actual.match(/\[FLAKY\]/g) || []).length;
-        expect(actual).contains(`<a href="https://jira.example.com/browse/TEST-1" target="_blank">[FLAKY] </a> `)
-        expect(count).to.equal(2); // Once comes from the footer
-
+        const count = (actual.match(/\[FLAKY\]/g) || []).length
+        expect(actual).contains(
+            `<a href="https://jira.example.com/browse/TEST-1" target="_blank">[FLAKY] </a> `
+        )
+        expect(count).to.equal(2) // Once comes from the footer
     })
-
 })

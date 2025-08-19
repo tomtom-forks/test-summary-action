@@ -11,7 +11,12 @@ const unnamedTestCase = "<no name>"
 
 const footer = `This test report was produced by the <a href="https://github.com/test-summary/action">test-summary action</a>.&nbsp; Made with ❤️ in Cambridge.`
 
-export function dashboardSummary(result: TestResult, show: number, summaryTitleInput: string, runUrl: string): string {
+export function dashboardSummary(
+    result: TestResult,
+    show: number,
+    summaryTitleInput: string,
+    runUrl: string
+): string {
     const count = result.counts
     let summary = ""
 
@@ -24,17 +29,21 @@ export function dashboardSummary(result: TestResult, show: number, summaryTitleI
     if (count.skipped > 0) {
         summary += `${summary ? ", " : ""}${count.skipped} skipped`
     }
-    
-    let summaryTitle = summaryTitleInput || statusTitle(show);
 
-    const summaryTitleHtml = runUrl 
-      ? `<h2><a href="${runUrl}" target="_blank">${summaryTitle}</a></h2>` 
-      : `<h2>${summaryTitle}</h2>`;
+    const summaryTitle = summaryTitleInput || statusTitle(show)
 
-    return `${summaryTitleHtml}<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`;
+    const summaryTitleHtml = runUrl
+        ? `<h2><a href="${runUrl}" target="_blank">${summaryTitle}</a></h2>`
+        : `<h2>${summaryTitle}</h2>`
+
+    return `${summaryTitleHtml}<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`
 }
 
-export function dashboardResults(result: TestResult, show: number, flakyTestsInfo: boolean = false): string {
+export function dashboardResults(
+    result: TestResult,
+    show: number,
+    flakyTestsInfo = false
+): string {
     let results = ``
     let count = 0
 
@@ -42,7 +51,9 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
         let table = "<table>"
         let suiteHeader = ``
         if (suite.name) {
-            suiteHeader = `<tr><th align="left">Test Suite: ${escapeHTML(suite.name)}</th></tr>`
+            suiteHeader = `<tr><th align="left">Test Suite: ${escapeHTML(
+                suite.name
+            )}</th></tr>`
         }
         table += suiteHeader
         for (const testcase of suite.cases) {
@@ -65,8 +76,7 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
             if (flakyTestsInfo && testcase.flaky) {
                 if (testcase.flakyTestTicket) {
                     table += `<a href="${testcase.flakyTestTicket}" target="_blank">[FLAKY] </a> `
-                }
-                else {
+                } else {
                     table += "[FLAKY] "
                 }
             }
@@ -77,7 +87,10 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
                 table += escapeHTML(testcase.description)
             }
 
-            if ((testcase.message && testcase.message.trim() !== '') || testcase.details) {
+            if (
+                (testcase.message && testcase.message.trim() !== "") ||
+                testcase.details
+            ) {
                 table += "<br/>\n"
 
                 if (testcase.message) {
@@ -88,7 +101,10 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
 
                 if (testcase.details) {
                     table += "<details><pre><code>"
-                    const cleanedDetails = testcase.details.replace(/\n\s*\n/g, '\n');
+                    const cleanedDetails = testcase.details.replace(
+                        /\n\s*\n/g,
+                        "\n"
+                    )
                     table += escapeHTML(cleanedDetails)
                     table += "</code></pre></details>"
                 }
@@ -98,17 +114,18 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
 
             count++
         }
-      table += "</table>"
+        table += "</table>"
 
-      if ( table !== `<table>${suiteHeader}</table>` ) {
-          results += table
-      }
+        if (table !== `<table>${suiteHeader}</table>`) {
+            results += table
+        }
     }
 
     if (flakyTestsInfo) {
-        results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available.`+
-        ` Flaky tests are unstable tests that sometimes fail and sometimes pass.`+
-        ` These tests do not cause pipelines to fail, unless the failure is due to a system crash, and are not retried since their behavior is not consistent.</p>`
+        results +=
+            `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available.` +
+            ` Flaky tests are unstable tests that sometimes fail and sometimes pass.` +
+            ` These tests do not cause pipelines to fail, unless the failure is due to a system crash, and are not retried since their behavior is not consistent.</p>`
     }
 
     results += `<tr><td><sub>${footer}</sub></td></tr>`
@@ -116,7 +133,7 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
     if (count === 0) {
         return `<h3>No test results to display.</h3>
       If the pipeline failed but no test runs indicate failures, it might be due to a 
-      <strong>build failure</strong> or a <strong>timeout</strong>. Check the logs for more information.`;
+      <strong>build failure</strong> or a <strong>timeout</strong>. Check the logs for more information.`
     }
 
     return results

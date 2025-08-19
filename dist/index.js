@@ -32,7 +32,7 @@ function dashboardSummary(result, show, summaryTitleInput, runUrl) {
     if (count.skipped > 0) {
         summary += `${summary ? ", " : ""}${count.skipped} skipped`;
     }
-    let summaryTitle = summaryTitleInput || statusTitle(show);
+    const summaryTitle = summaryTitleInput || statusTitle(show);
     const summaryTitleHtml = runUrl
         ? `<h2><a href="${runUrl}" target="_blank">${summaryTitle}</a></h2>`
         : `<h2>${summaryTitle}</h2>`;
@@ -75,7 +75,8 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
                 table += ": ";
                 table += (0, escape_html_1.default)(testcase.description);
             }
-            if ((testcase.message && testcase.message.trim() !== '') || testcase.details) {
+            if ((testcase.message && testcase.message.trim() !== "") ||
+                testcase.details) {
                 table += "<br/>\n";
                 if (testcase.message) {
                     table += "<pre><code>";
@@ -84,7 +85,7 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
                 }
                 if (testcase.details) {
                     table += "<details><pre><code>";
-                    const cleanedDetails = testcase.details.replace(/\n\s*\n/g, '\n');
+                    const cleanedDetails = testcase.details.replace(/\n\s*\n/g, "\n");
                     table += (0, escape_html_1.default)(cleanedDetails);
                     table += "</code></pre></details>";
                 }
@@ -98,9 +99,10 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
         }
     }
     if (flakyTestsInfo) {
-        results += `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available.` +
-            ` Flaky tests are unstable tests that sometimes fail and sometimes pass.` +
-            ` These tests do not cause pipelines to fail, unless the failure is due to a system crash, and are not retried since their behavior is not consistent.</p>`;
+        results +=
+            `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available.` +
+                ` Flaky tests are unstable tests that sometimes fail and sometimes pass.` +
+                ` These tests do not cause pipelines to fail, unless the failure is due to a system crash, and are not retried since their behavior is not consistent.</p>`;
     }
     results += `<tr><td><sub>${footer}</sub></td></tr>`;
     if (count === 0) {
@@ -203,25 +205,27 @@ function markFlakyTests(result, flakyTestsJsonPath) {
     const flakyTestsJson = JSON.parse(data);
     for (const flakyTest of flakyTestsJson) {
         const suiteName = flakyTest.testsuite;
-        const matchingSuite = result.suites.find((suite) => suite.project === suiteName || suite.name === suiteName);
+        const matchingSuite = result.suites.find(suite => suite.project === suiteName || suite.name === suiteName);
         if (matchingSuite) {
-            console.log(`Marking flaky test: ${flakyTest.name} in suite: ${matchingSuite.name}`);
-            const matchingCase = matchingSuite.cases.find((testCase) => { var _a; return (((_a = testCase.name) === null || _a === void 0 ? void 0 : _a.slice(0, MAX_LONG_VARCHAR_LENGTH)) === flakyTest.name) && testCase.description === flakyTest.class; });
+            const matchingCase = matchingSuite.cases.find(testCase => {
+                var _a;
+                return ((_a = testCase.name) === null || _a === void 0 ? void 0 : _a.slice(0, MAX_LONG_VARCHAR_LENGTH)) ===
+                    flakyTest.name &&
+                    testCase.description === flakyTest.class;
+            });
             if (matchingCase) {
-                console.log(`Found matching case: ${matchingCase.name}`);
                 matchingCase.flaky = true; // Mark the case as flaky
                 matchingCase.flakyTestTicket = flakyTest.jira_ticket_url; // Set the ticket if available
             }
         }
     }
-    // Sort the test cases within each suite: flaky=false cases first
-    result.suites.forEach((suite) => {
+    for (const suite of result.suites) {
         suite.cases.sort((a, b) => {
-            const flakyA = a.flaky;
-            const flakyB = b.flaky;
-            return Number(flakyA) - Number(flakyB);
+            const flakyA = a.flaky ? 1 : 0;
+            const flakyB = b.flaky ? 1 : 0;
+            return flakyA - flakyB; // Flaky tests come last
         });
-    });
+    }
     return result;
 }
 exports.markFlakyTests = markFlakyTests;
@@ -282,7 +286,7 @@ function getResultsFromPaths(paths) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const suiteMap = new Map();
-        let total = {
+        const total = {
             counts: { passed: 0, failed: 0, skipped: 0 },
             suites: [],
             exception: undefined
@@ -297,6 +301,9 @@ function getResultsFromPaths(paths) {
                     suiteMap.set(suite.project || suite.name || "", Object.assign(Object.assign({}, suite), { cases: [] }));
                 }
                 const mergedSuite = suiteMap.get(suite.project || suite.name || "");
+                if (!mergedSuite) {
+                    throw new Error("Suite not found in suiteMap");
+                }
                 const testCaseMap = new Map();
                 for (const testcase of mergedSuite.cases) {
                     testCaseMap.set(getTestCaseKey(testcase), testcase);
@@ -305,18 +312,24 @@ function getResultsFromPaths(paths) {
                     const key = getTestCaseKey(testcase);
                     const existingTestCase = testCaseMap.get(key);
                     if (existingTestCase) {
-                        if (existingTestCase.status == test_parser_1.TestStatus.Skip)
+                        if (existingTestCase.status === test_parser_1.TestStatus.Skip)
                             continue;
                         existingTestCase.run_count += 1;
                         if (testcase.status === test_parser_1.TestStatus.Fail) {
-                            existingTestCase.fail_count = (existingTestCase.fail_count || 0) + 1;
+                            existingTestCase.fail_count =
+                                (existingTestCase.fail_count || 0) + 1;
                             existingTestCase.status = test_parser_1.TestStatus.Fail; // Update status to Fail if it was previously not Fail
-                            if (testcase.message && !((_a = existingTestCase.message) === null || _a === void 0 ? void 0 : _a.includes(testcase.message))) {
-                                existingTestCase.message = (existingTestCase.message || "") + `\n${testcase.message || ""}`;
+                            if (testcase.message &&
+                                !((_a = existingTestCase.message) === null || _a === void 0 ? void 0 : _a.includes(testcase.message))) {
+                                existingTestCase.message = `${(existingTestCase.message || "").trim()}\n${(testcase.message || "").trim()}`.trim();
                             }
-                            if (testcase.details && !((_b = existingTestCase.details) === null || _b === void 0 ? void 0 : _b.includes(testcase.details || ""))) {
+                            if (testcase.details &&
+                                !((_b = existingTestCase.details) === null || _b === void 0 ? void 0 : _b.includes(testcase.details || ""))) {
                                 const separator = "\n---\n";
-                                existingTestCase.details = (existingTestCase.details || "") + separator + (testcase.details || "");
+                                existingTestCase.details =
+                                    (existingTestCase.details || "") +
+                                        separator +
+                                        (testcase.details || "");
                             }
                         }
                     }
@@ -349,7 +362,7 @@ function run() {
             const paths = [];
             for (const path of pathGlobs.split(/\r?\n/)) {
                 if (glob.hasMagic(path)) {
-                    paths.push(...yield glob.promise(path));
+                    paths.push(...(yield glob.promise(path)));
                 }
                 else {
                     paths.push(path.trim());
@@ -366,7 +379,9 @@ function run() {
                         show = test_parser_1.TestStatus.Pass | test_parser_1.TestStatus.Fail | test_parser_1.TestStatus.Skip;
                         continue;
                     }
-                    const showValue = test_parser_1.TestStatus[showName.replace(/^([a-z])(.*)/, (m, p1, p2) => p1.toUpperCase() + p2)];
+                    const showNameCapitalized = showName.replace(/^([a-z])(.*)/, (m, p1, p2) => `${p1.toUpperCase()}${p2}`);
+                    // Aseguramos que la clave generada exista en TestStatus
+                    const showValue = test_parser_1.TestStatus[showNameCapitalized];
                     if (!showValue) {
                         throw new Error(`unknown test type: ${showName}`);
                     }
@@ -381,14 +396,14 @@ function run() {
                 for (const path of paths) {
                     core.debug(`: ${path}`);
                 }
-                core.debug(`Output file: ${outputFile === '-' ? "(stdout)" : outputFile}`);
+                core.debug(`Output file: ${outputFile === "-" ? "(stdout)" : outputFile}`);
                 let showInfo = "Tests to show:";
                 if (show === 0) {
                     showInfo += " none";
                 }
                 for (const showName in test_parser_1.TestStatus) {
                     const showType = Number(showName);
-                    if (!isNaN(showType) && (show & showType) == showType) {
+                    if (!isNaN(showType) && (show & showType) === showType) {
                         showInfo += ` ${test_parser_1.TestStatus[showType]}`;
                     }
                 }
@@ -402,19 +417,19 @@ function run() {
             }
             let output = (0, dashboard_1.dashboardSummary)(total, show, summaryTitle, runUrl);
             if (show) {
-                output += (0, dashboard_1.dashboardResults)(total, show, flakyTestsJsonPath != "");
+                output += (0, dashboard_1.dashboardResults)(total, show, flakyTestsJsonPath !== "");
             }
             if (outputFile === "-") {
-                console.log(output);
+                core.info(output);
             }
             else {
                 const writefile = util.promisify(fs.writeFile);
                 yield writefile(outputFile, output);
             }
-            core.setOutput('passed', total.counts.passed);
-            core.setOutput('failed', total.counts.failed);
-            core.setOutput('skipped', total.counts.skipped);
-            core.setOutput('total', total.counts.passed + total.counts.failed + total.counts.skipped);
+            core.setOutput("passed", total.counts.passed);
+            core.setOutput("failed", total.counts.failed);
+            core.setOutput("skipped", total.counts.skipped);
+            core.setOutput("total", total.counts.passed + total.counts.failed + total.counts.skipped);
         }
         catch (error) {
             if (error instanceof Error) {
@@ -488,11 +503,9 @@ var TestStatus;
 function parseTap(data) {
     return __awaiter(this, void 0, void 0, function* () {
         const lines = data.trim().split(/\r?\n/);
-        let version = 12;
         let header = 0;
         let trailer = false;
         if (lines.length > 0 && lines[header].match(/^TAP version 13$/)) {
-            version = 13;
             header++;
         }
         if (lines.length > 0 && lines[header].match(/^1\.\./)) {
@@ -517,7 +530,7 @@ function parseTap(data) {
             let name = undefined;
             let description = undefined;
             let details = undefined;
-            if (found = line.match(/^\s*#(.*)/)) {
+            if ((found = line.match(/^\s*#(.*)/))) {
                 if (!found[1]) {
                     continue;
                 }
@@ -525,45 +538,45 @@ function parseTap(data) {
                 if (cases.length > 0) {
                     suites.push({
                         name: suitename,
-                        cases: cases
+                        cases
                     });
                     suitename = undefined;
                     cases = [];
                 }
                 if (suitename)
-                    suitename += " " + found[1].trim();
+                    suitename += ` ${found[1].trim()}`;
                 else
                     suitename = found[1].trim();
                 continue;
             }
-            else if (found = line.match(/^ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Ss][Kk][Ii][Pp]\S*(?:\s+(.*?)\s*)?$/)) {
+            else if ((found = line.match(/^ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Ss][Kk][Ii][Pp]\S*(?:\s+(.*?)\s*)?$/))) {
                 num = parseInt(found[1]);
                 status = TestStatus.Skip;
-                name = (found[2] && found[2].length > 0) ? found[2] : undefined;
+                name = found[2] && found[2].length > 0 ? found[2] : undefined;
                 description = found[3];
                 counts.skipped++;
             }
-            else if (found = line.match(/^ok(?:\s+(\d+))?\s*-?\s*(?:(.*?)\s*)?$/)) {
+            else if ((found = line.match(/^ok(?:\s+(\d+))?\s*-?\s*(?:(.*?)\s*)?$/))) {
                 num = parseInt(found[1]);
                 status = TestStatus.Pass;
                 name = found[2];
                 counts.passed++;
             }
-            else if (found = line.match(/^not ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Tt][Oo][Dd][Oo](?:\s+(.*?)\s*)?$/)) {
+            else if ((found = line.match(/^not ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Tt][Oo][Dd][Oo](?:\s+(.*?)\s*)?$/))) {
                 num = parseInt(found[1]);
                 status = TestStatus.Skip;
-                name = (found[2] && found[2].length > 0) ? found[2] : undefined;
+                name = found[2] && found[2].length > 0 ? found[2] : undefined;
                 description = found[3];
                 counts.skipped++;
             }
-            else if (found = line.match(/^not ok(?:\s+(\d+))?\s*-?\s*-?\s*(?:(.*?)\s*)?$/)) {
+            else if ((found = line.match(/^not ok(?:\s+(\d+))?\s*-?\s*-?\s*(?:(.*?)\s*)?$/))) {
                 num = parseInt(found[1]);
                 status = TestStatus.Fail;
                 name = found[2];
                 counts.failed++;
             }
-            else if (line.match(/^Bail out\!/)) {
-                const message = (line.match(/^Bail out\!(.*)/));
+            else if (line.match(/^Bail out!/)) {
+                const message = line.match(/^Bail out!(.*)/);
                 if (message) {
                     exception = message[1].trim();
                 }
@@ -586,15 +599,15 @@ function parseTap(data) {
             else if (num > testMax) {
                 testMax = num;
             }
-            if ((i + 1) < lines.length && lines[i + 1].match(/^  ---$/)) {
+            if (i + 1 < lines.length && lines[i + 1].match(/^ {2}---$/)) {
                 i++;
-                while (i < lines.length && !lines[i + 1].match(/^  \.\.\.$/)) {
-                    const detail = (lines[i + 1].match(/^  (.*)/));
+                while (i < lines.length && !lines[i + 1].match(/^ {2}\.\.\.$/)) {
+                    const detail = lines[i + 1].match(/^ {2}(.*)/);
                     if (!detail) {
                         throw new Error("invalid yaml in test case details");
                     }
                     if (details)
-                        details += "\n" + detail[1];
+                        details += `\n${detail[1]}`;
                     else
                         details = detail[1];
                     i++;
@@ -608,10 +621,10 @@ function parseTap(data) {
                 throw new Error("unexpected test results after trailer");
             }
             cases.push({
-                status: status,
-                name: name,
-                description: description,
-                details: details,
+                status,
+                name,
+                description,
+                details,
                 run_count: 0,
                 fail_count: 0,
                 flaky: false,
@@ -620,24 +633,25 @@ function parseTap(data) {
         }
         suites.push({
             name: suitename,
-            cases: cases
+            cases
         });
         return {
-            counts: counts,
-            suites: suites,
-            exception: exception
+            counts,
+            suites,
+            exception
         };
     });
 }
 exports.parseTap = parseTap;
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function parseJunitXml(xml) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let testsuites;
-        if ('testsuites' in xml) {
+        if ("testsuites" in xml) {
             testsuites = xml.testsuites.testsuite || [];
         }
-        else if ('testsuite' in xml) {
+        else if ("testsuite" in xml) {
             testsuites = [xml.testsuite];
         }
         else {
@@ -667,7 +681,6 @@ function parseJunitXml(xml) {
             }
             for (const testcase of testsuite.testcase) {
                 let status = TestStatus.Pass;
-                const id = testcase.$.id;
                 const classname = testcase.$.classname;
                 const name = testcase.$.name;
                 const duration = testcase.$.time;
@@ -678,7 +691,7 @@ function parseJunitXml(xml) {
                     status = TestStatus.Skip;
                     counts.skipped++;
                 }
-                else if (failure_or_error = testcase.failure || testcase.error) {
+                else if ((failure_or_error = testcase.failure || testcase.error)) {
                     status = TestStatus.Fail;
                     const element = failure_or_error[0];
                     message = element.$ ? element.$.message : undefined;
@@ -694,12 +707,12 @@ function parseJunitXml(xml) {
                     counts.passed++;
                 }
                 cases.push({
-                    status: status,
-                    name: name,
+                    status,
+                    name,
                     description: classname,
-                    message: message,
-                    details: details,
-                    duration: duration,
+                    message,
+                    details,
+                    duration,
                     run_count: 0,
                     fail_count: 0,
                     flaky: false,
@@ -708,15 +721,15 @@ function parseJunitXml(xml) {
             }
             suites.push({
                 name: testsuite.$.name,
-                project: project,
+                project,
                 timestamp: testsuite.$.timestamp,
                 filename: testsuite.$.file,
-                cases: cases,
+                cases
             });
         }
         return {
-            counts: counts,
-            suites: suites
+            counts,
+            suites
         };
     });
 }
@@ -760,6 +773,7 @@ function parseFile(filename) {
     });
 }
 exports.parseFile = parseFile;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 
 /***/ }),
