@@ -1,0 +1,46 @@
+# Copyright (C) 2023 TomTom NV. All rights reserved.
+
+---
+
+name: Quality Checks
+on:
+  pull_request:
+    types: [edited, opened, synchronize, reopened]
+
+jobs:
+  copyright-check:
+    name: Copyright
+    runs-on: az-weu-ubuntu-24.04-amd64-05cpu
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Copyright Checker
+        uses: tomtom-internal/copyright-checker-action@v4
+
+  commit-message:
+    name: Conventional Commit Message Compliance
+    runs-on: az-weu-ubuntu-24.04-amd64-05cpu
+
+    steps:
+      - name: Run Commisery
+        uses: tomtom-international/commisery-action@v3
+        with:
+          token: ${{ github.token }}
+
+  prettier:
+    name: Coding Standards Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check-out the repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install dev dependencies
+        run: npm install --only=dev
+
+      - name: Run prettier
+        run: npm run lint
