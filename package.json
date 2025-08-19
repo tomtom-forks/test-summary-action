@@ -5,7 +5,7 @@
   "description": "Display test results in a GitHub Actions workflow",
   "main": "bin/index.js",
   "scripts": {
-    "build": "tsc && cp action.yml bin/",
+    "build": "tsc && cp action.yml bin/ && ncc build",
     "format": "prettier --write **/*.ts",
     "lint": "eslint src/**/*.ts",
     "pack": "npm run build && ncc build",
