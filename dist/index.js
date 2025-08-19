@@ -32,17 +32,11 @@ function dashboardSummary(result, show, summaryTitleInput, runUrl) {
     if (count.skipped > 0) {
         summary += `${summary ? ", " : ""}${count.skipped} skipped`;
     }
-    let summaryTitle = "";
-    if (summaryTitleInput) {
-        summaryTitle += `<h2>${summaryTitleInput}</h2>`;
-    }
-    else {
-        summaryTitle += `<h2>${statusTitle(show)}</h2>`;
-    }
-    if (runUrl) {
-        summaryTitle = `<a href="${runUrl}" target="_blank">${summaryTitle}</a>`;
-    }
-    return summaryTitle + `<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`;
+    let summaryTitle = summaryTitleInput || statusTitle(show);
+    const summaryTitleHtml = runUrl
+        ? `<h2><a href="${runUrl}" target="_blank">${summaryTitle}</a></h2>`
+        : `<h2>${summaryTitle}</h2>`;
+    return `${summaryTitleHtml}<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`;
 }
 exports.dashboardSummary = dashboardSummary;
 function dashboardResults(result, show, flakyTestsInfo = false) {
@@ -110,7 +104,9 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
     }
     results += `<tr><td><sub>${footer}</sub></td></tr>`;
     if (count === 0) {
-        return "";
+        return `<h3>No test results to display.</h3>
+      If the pipeline failed but no test runs indicate failures, it might be due to a 
+      <strong>build failure</strong> or a <strong>timeout</strong>. Check the logs for more information.`;
     }
     return results;
 }
