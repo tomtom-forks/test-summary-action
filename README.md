@@ -149,6 +149,40 @@ Options are specified on the [`with` map](https://docs.github.com/en/actions/usi
 * **`summary-title`: the summary title** (optional)
   Title for the summary section. If not provided, defaults to "Test failures/results" or "Skipped/Passing tests" depending on the show input.
 
+* **`flaky-tests-json`: path to a flaky tests json** (optional)
+  An example of flaky tests json would be:
+  ```
+  [
+      {
+      "id": 12478,
+      "name": "safety_location_on_route[0: Testing with map=NDS_CLASSIC]",
+      "class": "com.tomtom.sdk.navigation.horizon.unified.common.UnifiedHorizonSpotSafetyLocationCollaborationTest",
+      "testsuite": ":navigation:navigation-horizon-engine-unified",
+      "repository": "go-sdk-android",
+      "error": "Multiple error messages have been encountered for this test",
+      "test_id": 7235272,
+      "end_date": null,
+      "end_reason": null
+    },
+    {
+      "id": 12479,
+      "name": "test_average_speed_when_car_enters_zone_moves_out_and_enters_again",
+      "class": "com.tomtom.sdk.navigation.horizon.unified.orbisndsclassic.UnifiedHorizonOrbisNdsClassicMapDependentSLAverageSpeedComponentTest",
+      "testsuite": ":navigation:navigation",
+      "repository": "go-sdk-android",
+      "error": "Multiple error messages have been encountered for this test",
+      "test_id": 7261657,
+      "end_date": null,
+      "end_reason": null
+    }
+  ]
+  ```
+  The required fields are `name`, `class` and `testsuite`.
+
+* **`run-url`: URL to the workflow run where the tests were executed** (optional)
+  It will be linked to the title of the produced test summary.
+
+
 FAQ
 ---
 * **How is the summary graphic generated? Does any of my data ever leave GitHub?**  
