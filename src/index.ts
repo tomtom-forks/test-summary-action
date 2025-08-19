@@ -83,6 +83,7 @@ async function run(): Promise<void> {
         const showList = core.getInput("show")
         const summaryTitle = core.getInput("summary-title") || ""
         const flakyTestsJsonPath = core.getInput("flaky-tests-json") || ""
+        const runUrl = core.getInput("run-url") || ""
 
         /*
          * Given paths may either be an individual path (eg "foo.xml"),
@@ -156,7 +157,7 @@ async function run(): Promise<void> {
             total = markFlakyTests(total, flakyTestsJsonPath)
         }
 
-        let output = dashboardSummary(total, show, summaryTitle)
+        let output = dashboardSummary(total, show, summaryTitle, runUrl)
 
         if (show) {
             output += dashboardResults(total, show, flakyTestsJsonPath != "")

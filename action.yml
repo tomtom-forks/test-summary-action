@@ -13,6 +13,10 @@ inputs:
     description: Title for the summary section. If not provided, defaults to "Test failures/results or Skipped/Passing tests depending on the show input.
     default: ''
     required: false
+  run-url:
+    description: Optional URL to the run that generated the test results to add a hyperlink in the title.
+    default: ''
+    required: false
   flaky-tests-json:
     description: Path to the JSON file with flaky test information to flag them in the summary.
     required: false
