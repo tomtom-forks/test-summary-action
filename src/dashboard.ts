@@ -114,7 +114,9 @@ export function dashboardResults(result: TestResult, show: number, flakyTestsInf
     results += `<tr><td><sub>${footer}</sub></td></tr>`
 
     if (count === 0) {
-        return ""
+        return `<h3>No test results to display.</h3>
+      If the pipeline failed but no test runs indicate failures, it might be due to a 
+      <strong>build failure</strong> or a <strong>timeout</strong>. Check the logs for more information.`;
     }
 
     return results
