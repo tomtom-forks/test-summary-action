@@ -8,17 +8,9 @@ on:
     types: [edited, opened, synchronize, reopened]
 
 jobs:
-  copyright-check:
-    name: Copyright
-    runs-on: az-weu-ubuntu-24.04-amd64-05cpu
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Copyright Checker
-        uses: tomtom-internal/copyright-checker-action@v4
-
   commit-message:
     name: Conventional Commit Message Compliance
-    runs-on: az-weu-ubuntu-24.04-amd64-05cpu
+    runs-on: ubuntu-latest
 
     steps:
       - name: Run Commisery
