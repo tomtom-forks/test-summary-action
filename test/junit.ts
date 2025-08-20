@@ -3,6 +3,7 @@ import { expect } from "chai"
 
 import { TestStatus, parseJunitFile } from "../src/test_parser"
 import { markFlakyTests } from "../src/flaky_tests"
+import exp from "constants"
 
 const resourcePath = `${__dirname}/resources/junit`
 
@@ -215,5 +216,8 @@ describe("junit", async () => {
             "https://jira.example.com/browse/TEST-1"
         )
         expect(resultUpdated.suites[0].cases[9].flaky).to.eql(true)
+        expect(resultUpdated.suites[0].cases[9].flakyTestTicket).to.eql(
+            undefined
+        )
     })
 })
