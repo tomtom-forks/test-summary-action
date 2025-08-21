@@ -380,7 +380,6 @@ function run() {
                         continue;
                     }
                     const showNameCapitalized = showName.replace(/^([a-z])(.*)/, (m, p1, p2) => `${p1.toUpperCase()}${p2}`);
-                    // Aseguramos que la clave generada exista en TestStatus
                     const showValue = test_parser_1.TestStatus[showNameCapitalized];
                     if (!showValue) {
                         throw new Error(`unknown test type: ${showName}`);

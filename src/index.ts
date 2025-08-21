@@ -148,7 +148,6 @@ async function run(): Promise<void> {
                     (m, p1, p2) => `${p1.toUpperCase()}${p2}`
                 )
 
-                // Aseguramos que la clave generada exista en TestStatus
                 const showValue =
                     TestStatus[showNameCapitalized as keyof typeof TestStatus]
 
