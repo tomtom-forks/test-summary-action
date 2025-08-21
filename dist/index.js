@@ -13,11 +13,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.dashboardResults = exports.dashboardSummary = void 0;
 const escape_html_1 = __importDefault(__nccwpck_require__(695));
 const test_parser_1 = __nccwpck_require__(2393);
-const dashboardUrl = "https://svg.test-summary.com/dashboard.svg";
-const passIconUrl = "https://svg.test-summary.com/icon/pass.svg?s=12";
-const failIconUrl = "https://svg.test-summary.com/icon/fail.svg?s=12";
-const skipIconUrl = "https://svg.test-summary.com/icon/skip.svg?s=12";
-// not used: const noneIconUrl = 'https://svg.test-summary.com/icon/none.svg?s=12'
+const dashboardUrl = "https://svg.test-summary.com/dashboard.svg"; // we need to use this one as it is dynamic depending on the number of tests executed
+const passIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/pass.svg";
+const failIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/fail.svg";
+const skipIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/skip.svg";
+const flakyIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/flaky.svg";
+// not used: const noneIconUrl = '"https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/none.svg'
 const unnamedTestCase = "<no name>";
 const footer = `This test report was produced by the <a href="https://github.com/test-summary/action">test-summary action</a>.&nbsp; Made with ❤️ in Cambridge.`;
 function dashboardSummary(result, show, summaryTitleInput, runUrl) {
@@ -54,7 +55,7 @@ function dashboardResults(result, show, flakyTestsInfo = false) {
                 continue;
             }
             table += "<tr><td>";
-            const icon = statusIcon(testcase.status);
+            const icon = statusIcon(testcase.status, testcase.flaky);
             if (icon) {
                 table += icon;
                 table += "&nbsp; ";
@@ -125,7 +126,10 @@ function statusTitle(status) {
             return "Test results";
     }
 }
-function statusIcon(status) {
+function statusIcon(status, flaky) {
+    if (flaky && status === test_parser_1.TestStatus.Fail) {
+        return `<img src="${flakyIconUrl}" alt="" />`;
+    }
     switch (status) {
         case test_parser_1.TestStatus.Pass:
             return `<img src="${passIconUrl}" alt="" />`;

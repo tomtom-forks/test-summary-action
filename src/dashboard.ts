@@ -1,11 +1,16 @@
 import escapeHTML from "./escape_html"
 import { TestResult, TestStatus } from "./test_parser"
 
-const dashboardUrl = "https://svg.test-summary.com/dashboard.svg"
-const passIconUrl = "https://svg.test-summary.com/icon/pass.svg?s=12"
-const failIconUrl = "https://svg.test-summary.com/icon/fail.svg?s=12"
-const skipIconUrl = "https://svg.test-summary.com/icon/skip.svg?s=12"
-// not used: const noneIconUrl = 'https://svg.test-summary.com/icon/none.svg?s=12'
+const dashboardUrl = "https://svg.test-summary.com/dashboard.svg" // we need to use this one as it is dynamic depending on the number of tests executed
+const passIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/pass.svg"
+const failIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/fail.svg"
+const skipIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/skip.svg"
+const flakyIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/flaky.svg"
+// not used: const noneIconUrl = '"https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/none.svg'
 
 const unnamedTestCase = "<no name>"
 
@@ -63,7 +68,7 @@ export function dashboardResults(
 
             table += "<tr><td>"
 
-            const icon = statusIcon(testcase.status)
+            const icon = statusIcon(testcase.status, testcase.flaky)
             if (icon) {
                 table += icon
                 table += "&nbsp; "
@@ -152,7 +157,13 @@ function statusTitle(status: TestStatus): string {
     }
 }
 
-function statusIcon(status: TestStatus): string | undefined {
+function statusIcon(
+    status: TestStatus,
+    flaky: boolean | undefined
+): string | undefined {
+    if (flaky && status === TestStatus.Fail) {
+        return `<img src="${flakyIconUrl}" alt="" />`
+    }
     switch (status) {
         case TestStatus.Pass:
             return `<img src="${passIconUrl}" alt="" />`
