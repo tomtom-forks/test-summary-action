@@ -5,6 +5,8 @@ const dashboardUrl = "https://svg.test-summary.com/dashboard.svg"
 const passIconUrl = "https://svg.test-summary.com/icon/pass.svg?s=12"
 const failIconUrl = "https://svg.test-summary.com/icon/fail.svg?s=12"
 const skipIconUrl = "https://svg.test-summary.com/icon/skip.svg?s=12"
+const flakyIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/blob/feat/add-flaky-tests-detection/src/assets/flaky.svg"
 // not used: const noneIconUrl = 'https://svg.test-summary.com/icon/none.svg?s=12'
 
 const unnamedTestCase = "<no name>"
@@ -63,7 +65,7 @@ export function dashboardResults(
 
             table += "<tr><td>"
 
-            const icon = statusIcon(testcase.status)
+            const icon = statusIcon(testcase.status, testcase.flaky)
             if (icon) {
                 table += icon
                 table += "&nbsp; "
@@ -152,7 +154,13 @@ function statusTitle(status: TestStatus): string {
     }
 }
 
-function statusIcon(status: TestStatus): string | undefined {
+function statusIcon(
+    status: TestStatus,
+    flaky: boolean | undefined
+): string | undefined {
+    if (flaky && status === TestStatus.Fail) {
+        return `<img src="${flakyIconUrl}" alt="" />`
+    }
     switch (status) {
         case TestStatus.Pass:
             return `<img src="${passIconUrl}" alt="" />`
