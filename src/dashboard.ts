@@ -1,13 +1,12 @@
 import escapeHTML from "./escape_html"
 import { TestResult, TestStatus } from "./test_parser"
 
-const dashboardUrl = "https://svg.test-summary.com/dashboard.svg"
-const passIconUrl = "https://svg.test-summary.com/icon/pass.svg?s=12"
-const failIconUrl = "https://svg.test-summary.com/icon/fail.svg?s=12"
-const skipIconUrl = "https://svg.test-summary.com/icon/skip.svg?s=12"
-const flakyIconUrl =
-    "https://github.com/tomtom-forks/test-summary-action/blob/feat/add-flaky-tests-detection/src/assets/flaky.svg"
-// not used: const noneIconUrl = 'https://svg.test-summary.com/icon/none.svg?s=12'
+const dashboardUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/dashboard.svg"
+const passIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/pass.svg"
+const failIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/fail.svg"
+const skipIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/skip.svg"
+const flakyIconUrl = "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/flaky.svg"
+// not used: const noneIconUrl = '"https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/none.svg'
 
 const unnamedTestCase = "<no name>"
 
