@@ -146,6 +146,37 @@ Options are specified on the [`with` map](https://docs.github.com/en/actions/usi
       show: "fail, skip"
   ```
 
+* **`summary-title`: the summary title** (optional)
+  Title for the summary section. If not provided, defaults to "Test failures/results" or "Skipped/Passing tests" depending on the show input.
+
+* **`flaky-tests-json`: path to a flaky tests json** (optional)
+  An example of flaky tests json would be:
+  ```
+  [
+      {
+      "id": 1,
+      "name": "testName1",
+      "class": "className1",
+      "testsuite": "testsuiteName1",
+      "repository": "repoName",
+      "error": "Multiple error messages have been encountered for this test",
+    },
+    {
+      "id": 2,
+      "name": "testName2",
+      "class": "className2",
+      "testsuite": "testsuiteName2",
+      "repository": "repoName",
+      "error": "Multiple error messages have been encountered for this test",
+    }
+  ]
+  ```
+  The required fields are `name`, `class` and `testsuite`.
+
+* **`run-url`: URL to the workflow run where the tests were executed** (optional)
+  It will be linked to the title of the produced test summary.
+
+
 FAQ
 ---
 * **How is the summary graphic generated? Does any of my data ever leave GitHub?**  

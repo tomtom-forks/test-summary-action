@@ -25,6 +25,7 @@ export interface TestResult {
 
 export interface TestSuite {
     name?: string
+    project?: string
     timestamp?: string
     filename?: string
     cases: TestCase[]
@@ -37,6 +38,8 @@ export interface TestCase {
     message?: string
     details?: string
     duration?: string
+    flaky?: boolean
+    flakyTestTicket?: string
 }
 
 export async function parseTap(data: string): Promise<TestResult> {
@@ -183,7 +186,9 @@ export async function parseTap(data: string): Promise<TestResult> {
             status: status,
             name: name,
             description: description,
-            details: details
+            details: details,
+            flaky: false, // Flaky tests will be marked later
+            flakyTestTicket: undefined // This will be set later if flaky tests are marked
         })
     }
 
@@ -228,6 +233,15 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
             continue
         }
 
+        // Check if properties exist and get "project" property
+        let project = "";
+        const properties = testsuite.properties?.[0]?.property || [];
+        for (const property of properties) {
+            if (property.$.name === "project") {
+                project = property.$.value;
+            }
+        }
+
         for (const testcase of testsuite.testcase) {
             let status = TestStatus.Pass
 
@@ -267,15 +281,18 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
                 description: classname,
                 message: message,
                 details: details,
-                duration: duration
+                duration: duration,
+                flaky: false, // Flaky tests will be marked later
+                flakyTestTicket: undefined // This will be set later if flaky tests are marked
             })
         }
 
         suites.push({
             name: testsuite.$.name,
+            project: project,
             timestamp: testsuite.$.timestamp,
             filename: testsuite.$.file,
-            cases: cases
+            cases: cases,
         })
     }
 
