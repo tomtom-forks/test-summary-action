@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="42">
+  <title>Test Dashboard</title>
+  <style>
+    .icon.passed { fill: #1a7f37; }
+    .icon.failed { fill: #cf222e; }
+    .icon.skipped { fill: #6e7781; }
+    .icon.neutral { fill: #6e7781; }
+    .icon.graphic { fill: #ffffff; }
+    .chart.passed { fill: #2da44e; }
+    .chart.failed { fill: #fa4549; }
+    .chart.skipped { fill: #6e7781; }
+    .chart.neutral { fill: #6e7781; }
+    .resultsMessage {
+      font-size: 16px;
+      font-weight: 600;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    }
+    .resultsMessage.passed { fill: #24292f; }
+    .resultsMessage.failed { fill: #cf222e; }
+    .resultsMessage.neutral { fill: #24292f; }
+    .detailsMessage {
+      font-size: 13px;
+      font-weight: 400;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+      fill: #57606a;
+    }
+
+    @media (prefers-color-scheme:dark) {
+      .icon.passed { fill: #238636; }
+      .icon.failed { fill: #da3633; }
+      .icon.skipped { fill: #c9d1d9; }
+      .icon.neutral { fill: #c9d1d9; }
+      .icon.graphic { fill: #ffffff; }
+      .chart.passed { fill: #2ea043; }
+      .chart.failed { fill: #f85149; }
+      .chart.skipped { fill: #c9d1d9; }
+      .chart.neutral { fill: #c9d1d9; }
+      .resultsMessage.passed { fill: #c9d1d9; }
+      .resultsMessage.failed { fill: #f85149; }
+      .resultsMessage.neutral { fill: #c9d1d9; }
+      .detailsMessage { fill: #8b949e; }
+    }
+  </style>
+
+  
+            <g transform="scale(1.875)">
+              <path fill-rule="evenodd"
+                    class="icon neutral"
+                    d="M 1.5 8
+                       a 6.5 6.5 0 1 1 13 0
+                       a 6.5 6.5 0 0 1 -13 0
+                       z
+                       M 8 0
+                       a 8 8 0 1 0 0 16
+                       A 8 8 0 0 0 8 0
+                       z
+                       m 3.28 5.78
+                       a 0.75 0.75 0 0 0 -1.06 -1.06
+                       l -5.5 5.5
+                       a 0.75 0.75 0 1 0 1.06 1.06
+                       l 5.5 -5.5
+                       z"/>
+            </g>
+            
+
+  <text x="42"
+        y="16"
+        class="resultsMessage neutral">
+          No tests were run
+  </text>
+
+  <text x="42"
+        y="34.2"
+        class="detailsMessage">
+          
+  </text>
+</svg>
