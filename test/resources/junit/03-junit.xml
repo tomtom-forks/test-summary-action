@@ -65,6 +65,7 @@
     <property name="ant.file.type" value="file" />
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16" />
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16" />
+    <property name="project" value="testsuite-project-name" />
   </properties>
   <testcase classname="test" name="passesTestOne" time="0.0" />
   <testcase classname="test" name="passesTestTwo" time="0.0" />

@@ -5,7 +5,7 @@
   "description": "Display test results in a GitHub Actions workflow",
   "main": "bin/index.js",
   "scripts": {
-    "build": "tsc && cp action.yml bin/",
+    "build": "tsc && cp action.yml bin/ && ncc build",
     "format": "prettier --write **/*.ts",
     "lint": "eslint src/**/*.ts",
     "pack": "npm run build && ncc build",
@@ -39,7 +39,7 @@
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.11.18",
-    "@types/xml2js": "^0.4.11",
+    "@types/xml2js": "^0.4.14",
     "@vercel/ncc": "^0.36.0",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",

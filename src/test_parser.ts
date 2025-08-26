@@ -4,9 +4,9 @@ import * as util from "util"
 import xml2js from "xml2js"
 
 export enum TestStatus {
-    Pass = (1 << 0),
-    Fail = (1 << 1),
-    Skip = (1 << 2)
+    Pass = 1 << 0,
+    Fail = 1 << 1,
+    Skip = 1 << 2
 }
 
 export interface TestCounts {
@@ -25,6 +25,7 @@ export interface TestResult {
 
 export interface TestSuite {
     name?: string
+    project?: string
     timestamp?: string
     filename?: string
     cases: TestCase[]
@@ -37,16 +38,18 @@ export interface TestCase {
     message?: string
     details?: string
     duration?: string
+    run_count: number
+    fail_count?: number
+    flaky?: boolean
+    flakyTestTicket?: string
 }
 
 export async function parseTap(data: string): Promise<TestResult> {
     const lines = data.trim().split(/\r?\n/)
-    let version = 12
     let header = 0
     let trailer = false
 
     if (lines.length > 0 && lines[header].match(/^TAP version 13$/)) {
-        version = 13
         header++
     }
 
@@ -58,10 +61,10 @@ export async function parseTap(data: string): Promise<TestResult> {
     let testMax = 0
     let num = 0
 
-    const suites: TestSuite[] = [ ]
+    const suites: TestSuite[] = []
     let exception: string | undefined = undefined
 
-    let cases = [ ]
+    let cases = []
     let suitename: string | undefined = undefined
 
     const counts = {
@@ -79,7 +82,7 @@ export async function parseTap(data: string): Promise<TestResult> {
         let description: string | undefined = undefined
         let details: string | undefined = undefined
 
-        if (found = line.match(/^\s*#(.*)/)) {
+        if ((found = line.match(/^\s*#(.*)/))) {
             if (!found[1]) {
                 continue
             }
@@ -88,47 +91,59 @@ export async function parseTap(data: string): Promise<TestResult> {
             if (cases.length > 0) {
                 suites.push({
                     name: suitename,
-                    cases: cases
+                    cases
                 })
 
                 suitename = undefined
-                cases = [ ]
+                cases = []
             }
 
-            if (suitename)
-                suitename += " " + found[1].trim()
-            else
-                suitename = found[1].trim()
+            if (suitename) suitename += ` ${found[1].trim()}`
+            else suitename = found[1].trim()
             continue
-        } else if (found = line.match(/^ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Ss][Kk][Ii][Pp]\S*(?:\s+(.*?)\s*)?$/)) {
+        } else if (
+            (found = line.match(
+                /^ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Ss][Kk][Ii][Pp]\S*(?:\s+(.*?)\s*)?$/
+            ))
+        ) {
             num = parseInt(found[1])
             status = TestStatus.Skip
-            name = (found[2] && found[2].length > 0) ? found[2] : undefined
+            name = found[2] && found[2].length > 0 ? found[2] : undefined
             description = found[3]
 
             counts.skipped++
-        } else if (found = line.match(/^ok(?:\s+(\d+))?\s*-?\s*(?:(.*?)\s*)?$/)) {
+        } else if (
+            (found = line.match(/^ok(?:\s+(\d+))?\s*-?\s*(?:(.*?)\s*)?$/))
+        ) {
             num = parseInt(found[1])
             status = TestStatus.Pass
             name = found[2]
 
             counts.passed++
-        } else if (found = line.match(/^not ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Tt][Oo][Dd][Oo](?:\s+(.*?)\s*)?$/)) {
+        } else if (
+            (found = line.match(
+                /^not ok(?:\s+(\d+))?\s*-?\s*([^#]*?)\s*#\s*[Tt][Oo][Dd][Oo](?:\s+(.*?)\s*)?$/
+            ))
+        ) {
             num = parseInt(found[1])
             status = TestStatus.Skip
-            name = (found[2] && found[2].length > 0) ? found[2] : undefined
+            name = found[2] && found[2].length > 0 ? found[2] : undefined
             description = found[3]
 
             counts.skipped++
-        } else if (found = line.match(/^not ok(?:\s+(\d+))?\s*-?\s*-?\s*(?:(.*?)\s*)?$/)) {
+        } else if (
+            (found = line.match(
+                /^not ok(?:\s+(\d+))?\s*-?\s*-?\s*(?:(.*?)\s*)?$/
+            ))
+        ) {
             num = parseInt(found[1])
             status = TestStatus.Fail
             name = found[2]
 
             counts.failed++
-        } else if (line.match(/^Bail out\!/)) {
-            const message = (line.match(/^Bail out\!(.*)/))
-            
+        } else if (line.match(/^Bail out!/)) {
+            const message = line.match(/^Bail out!(.*)/)
+
             if (message) {
                 exception = message[1].trim()
             }
@@ -150,20 +165,18 @@ export async function parseTap(data: string): Promise<TestResult> {
             testMax = num
         }
 
-        if ((i + 1) < lines.length && lines[i + 1].match(/^  ---$/)) {
+        if (i + 1 < lines.length && lines[i + 1].match(/^ {2}---$/)) {
             i++
 
-            while (i < lines.length && !lines[i + 1].match(/^  \.\.\.$/)) {
-                const detail = (lines[i + 1].match(/^  (.*)/))
+            while (i < lines.length && !lines[i + 1].match(/^ {2}\.\.\.$/)) {
+                const detail = lines[i + 1].match(/^ {2}(.*)/)
 
                 if (!detail) {
                     throw new Error("invalid yaml in test case details")
                 }
 
-                if (details)
-                    details += "\n" + detail[1]
-                else
-                    details = detail[1]
+                if (details) details += `\n${detail[1]}`
+                else details = detail[1]
 
                 i++
             }
@@ -180,32 +193,36 @@ export async function parseTap(data: string): Promise<TestResult> {
         }
 
         cases.push({
-            status: status,
-            name: name,
-            description: description,
-            details: details
+            status,
+            name,
+            description,
+            details,
+            run_count: 0,
+            fail_count: 0,
+            flaky: false, // Flaky tests will be marked later
+            flakyTestTicket: undefined // This will be set later if flaky tests are marked
         })
     }
 
     suites.push({
         name: suitename,
-        cases: cases
+        cases
     })
 
     return {
-        counts: counts,
-        suites: suites,
-        exception: exception
+        counts,
+        suites,
+        exception
     }
 }
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 async function parseJunitXml(xml: any): Promise<TestResult> {
     let testsuites
 
-    if ('testsuites' in xml) {
-        testsuites = xml.testsuites.testsuite || [ ]
-    } else if ('testsuite' in xml) {
-        testsuites = [ xml.testsuite ]
+    if ("testsuites" in xml) {
+        testsuites = xml.testsuites.testsuite || []
+    } else if ("testsuite" in xml) {
+        testsuites = [xml.testsuite]
     } else {
         throw new Error("expected top-level testsuites or testsuite node")
     }
@@ -214,7 +231,7 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
         throw new Error("expected array of testsuites")
     }
 
-    const suites: TestSuite[] = [ ]
+    const suites: TestSuite[] = []
     const counts = {
         passed: 0,
         failed: 0,
@@ -222,16 +239,24 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
     }
 
     for (const testsuite of testsuites) {
-        const cases = [ ]
+        const cases = []
 
         if (!Array.isArray(testsuite.testcase)) {
             continue
         }
 
+        // Check if properties exist and get "project" property
+        let project = ""
+        const properties = testsuite.properties?.[0]?.property || []
+        for (const property of properties) {
+            if (property.$.name === "project") {
+                project = property.$.value
+            }
+        }
+
         for (const testcase of testsuite.testcase) {
             let status = TestStatus.Pass
 
-            const id = testcase.$.id
             const classname = testcase.$.classname
             const name = testcase.$.name
             const duration = testcase.$.time
@@ -244,7 +269,9 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
                 status = TestStatus.Skip
 
                 counts.skipped++
-            } else if (failure_or_error = testcase.failure || testcase.error) {
+            } else if (
+                (failure_or_error = testcase.failure || testcase.error)
+            ) {
                 status = TestStatus.Fail
 
                 const element = failure_or_error[0]
@@ -260,33 +287,39 @@ async function parseJunitXml(xml: any): Promise<TestResult> {
             } else {
                 counts.passed++
             }
-            
+
             cases.push({
-                status: status,
-                name: name,
+                status,
+                name,
                 description: classname,
-                message: message,
-                details: details,
-                duration: duration
+                message,
+                details,
+                duration,
+                run_count: 0,
+                fail_count: 0,
+                flaky: false, // Flaky tests will be marked later
+                flakyTestTicket: undefined // This will be set later if flaky tests are marked
             })
         }
 
         suites.push({
             name: testsuite.$.name,
+            project,
             timestamp: testsuite.$.timestamp,
             filename: testsuite.$.file,
-            cases: cases
+            cases
         })
     }
 
     return {
-        counts: counts,
-        suites: suites
+        counts,
+        suites
     }
 }
 
 export async function parseJunit(data: string): Promise<TestResult> {
     const parser = util.promisify(xml2js.parseString)
+
     const xml: any = await parser(data)
 
     return await parseJunitXml(xml)
@@ -308,9 +341,11 @@ export async function parseFile(filename: string): Promise<TestResult> {
 
     const data = await readfile(filename, "utf8")
 
-    if (data.match(/^TAP version 13\r?\n/) ||
+    if (
+        data.match(/^TAP version 13\r?\n/) ||
         data.match(/^ok /) ||
-        data.match(/^not ok /)) {
+        data.match(/^not ok /)
+    ) {
         return await parseTap(data)
     }
 
@@ -322,3 +357,4 @@ export async function parseFile(filename: string): Promise<TestResult> {
 
     throw new Error(`unknown test file type for '${filename}'`)
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */

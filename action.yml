@@ -8,10 +8,22 @@ inputs:
   output:
     description: File to write with rendered output
   show:
-    description: Types of tests to show in the results table
+    description: List of types of tests to show in the results table. Values are `all`, `none`, `pass`, `skip`, or `fail`.
+  summary-title:
+    description: Title for the summary section. If not provided, defaults to "Test failures/results or Skipped/Passing tests depending on the show input.
+    default: ''
+    required: false
+  run-url:
+    description: Optional URL to the run that generated the test results to add a hyperlink in the title.
+    default: ''
+    required: false
+  flaky-tests-json:
+    description: Path to the JSON file with flaky test information to flag them in the summary.
+    required: false
+
 runs:
   using: 'node20'
-  main: 'index.js'
+  main: 'dist/index.js'
 branding:
   icon: check-square
   color: green

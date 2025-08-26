@@ -1,17 +1,27 @@
 import escapeHTML from "./escape_html"
 import { TestResult, TestStatus } from "./test_parser"
 
-const dashboardUrl = "https://svg.test-summary.com/dashboard.svg"
-const passIconUrl = "https://svg.test-summary.com/icon/pass.svg?s=12"
-const failIconUrl = "https://svg.test-summary.com/icon/fail.svg?s=12"
-const skipIconUrl = "https://svg.test-summary.com/icon/skip.svg?s=12"
-// not used: const noneIconUrl = 'https://svg.test-summary.com/icon/none.svg?s=12'
+const dashboardUrl = "https://svg.test-summary.com/dashboard.svg" // we need to use this one as it is dynamic depending on the number of tests executed
+const passIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/pass.svg"
+const failIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/fail.svg"
+const skipIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/skip.svg"
+const flakyIconUrl =
+    "https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/flaky.svg"
+// not used: const noneIconUrl = '"https://github.com/tomtom-forks/test-summary-action/raw/icons/assets/none.svg'
 
 const unnamedTestCase = "<no name>"
 
 const footer = `This test report was produced by the <a href="https://github.com/test-summary/action">test-summary action</a>.&nbsp; Made with ❤️ in Cambridge.`
 
-export function dashboardSummary(result: TestResult): string {
+export function dashboardSummary(
+    result: TestResult,
+    show: number,
+    summaryTitleInput: string,
+    runUrl: string
+): string {
     const count = result.counts
     let summary = ""
 
@@ -25,16 +35,32 @@ export function dashboardSummary(result: TestResult): string {
         summary += `${summary ? ", " : ""}${count.skipped} skipped`
     }
 
-    return `<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`
+    const summaryTitle = summaryTitleInput || statusTitle(show)
+
+    const summaryTitleHtml = runUrl
+        ? `<h2><a href="${runUrl}" target="_blank">${summaryTitle}</a></h2>`
+        : `<h2>${summaryTitle}</h2>`
+
+    return `${summaryTitleHtml}<img src="${dashboardUrl}?p=${count.passed}&f=${count.failed}&s=${count.skipped}" alt="${summary}">`
 }
 
-export function dashboardResults(result: TestResult, show: number): string {
-    let table = "<table>"
+export function dashboardResults(
+    result: TestResult,
+    show: number,
+    flakyTestsInfo = false
+): string {
+    let results = ``
     let count = 0
 
-    table += `<tr><th align="left">${statusTitle(show)}:</th></tr>`
-
     for (const suite of result.suites) {
+        let table = "<table>"
+        let suiteHeader = ``
+        if (suite.name) {
+            suiteHeader = `<tr><th align="left">Test Suite: ${escapeHTML(
+                suite.name
+            )}</th></tr>`
+        }
+        table += suiteHeader
         for (const testcase of suite.cases) {
             if (show !== 0 && (show & testcase.status) === 0) {
                 continue
@@ -42,12 +68,23 @@ export function dashboardResults(result: TestResult, show: number): string {
 
             table += "<tr><td>"
 
-            const icon = statusIcon(testcase.status)
+            const icon = statusIcon(testcase.status, testcase.flaky)
             if (icon) {
                 table += icon
                 table += "&nbsp; "
             }
 
+            if (testcase.status === TestStatus.Fail) {
+                table += `<b>(${testcase.fail_count}/${testcase.run_count} attempts failed)</b>&nbsp;`
+            }
+
+            if (flakyTestsInfo && testcase.flaky) {
+                if (testcase.flakyTestTicket) {
+                    table += `<a href="${testcase.flakyTestTicket}" target="_blank">[FLAKY] </a> `
+                } else {
+                    table += "[FLAKY] "
+                }
+            }
             table += escapeHTML(testcase.name || unnamedTestCase)
 
             if (testcase.description) {
@@ -55,7 +92,10 @@ export function dashboardResults(result: TestResult, show: number): string {
                 table += escapeHTML(testcase.description)
             }
 
-            if (testcase.message || testcase.details) {
+            if (
+                (testcase.message && testcase.message.trim() !== "") ||
+                testcase.details
+            ) {
                 table += "<br/>\n"
 
                 if (testcase.message) {
@@ -65,9 +105,13 @@ export function dashboardResults(result: TestResult, show: number): string {
                 }
 
                 if (testcase.details) {
-                    table += "<pre><code>"
-                    table += escapeHTML(testcase.details)
-                    table += "</code></pre>"
+                    table += "<details><pre><code>"
+                    const cleanedDetails = testcase.details.replace(
+                        /\n\s*\n/g,
+                        "\n"
+                    )
+                    table += escapeHTML(cleanedDetails)
+                    table += "</code></pre></details>"
                 }
             }
 
@@ -75,16 +119,29 @@ export function dashboardResults(result: TestResult, show: number): string {
 
             count++
         }
+        table += "</table>"
+
+        if (table !== `<table>${suiteHeader}</table>`) {
+            results += table
+        }
     }
 
-    table += `<tr><td><sub>${footer}</sub></td></tr>`
-    table += "</table>"
+    if (flakyTestsInfo) {
+        results +=
+            `<p><b>Note:</b> Flaky tests are marked with [FLAKY] in the test case name and with a link to the JIRA ticket if available.` +
+            ` Flaky tests are unstable tests that sometimes fail and sometimes pass.` +
+            ` These tests do not cause pipelines to fail, unless the failure is due to a system crash, and are not retried since their behavior is not consistent.</p>`
+    }
+
+    results += `<tr><td><sub>${footer}</sub></td></tr>`
 
     if (count === 0) {
-        return ""
+        return `<h3>No test results to display.</h3>
+      If the pipeline failed but no test runs indicate failures, it might be due to a 
+      <strong>build failure</strong> or a <strong>timeout</strong>. Check the logs for more information.`
     }
 
-    return table
+    return results
 }
 
 function statusTitle(status: TestStatus): string {
@@ -100,7 +157,13 @@ function statusTitle(status: TestStatus): string {
     }
 }
 
-function statusIcon(status: TestStatus): string | undefined {
+function statusIcon(
+    status: TestStatus,
+    flaky: boolean | undefined
+): string | undefined {
+    if (flaky && status === TestStatus.Fail) {
+        return `<img src="${flakyIconUrl}" alt="" />`
+    }
     switch (status) {
         case TestStatus.Pass:
             return `<img src="${passIconUrl}" alt="" />`
