@@ -732,7 +732,7 @@ function parseJunitXml(xml) {
                 else if ((failure_or_error =
                     testcase.failure ||
                         testcase.error ||
-                        testcase["system-error"])) {
+                        testcase["system-err"])) {
                     status = TestStatus.Fail;
                     const element = failure_or_error[0];
                     message = element.$ ? element.$.message : undefined;
@@ -743,7 +743,7 @@ function parseJunitXml(xml) {
                         details = element._;
                     }
                     counts.failed++;
-                    system_error = testcase["system-error"] ? true : false;
+                    system_error = testcase["system-err"] ? true : false;
                 }
                 else {
                     counts.passed++;
