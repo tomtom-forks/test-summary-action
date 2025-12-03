@@ -11,7 +11,7 @@ jobs:
   commit-message:
     name: Conventional Commit Message Compliance
     runs-on: ubuntu-latest
-
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Run Commisery
         uses: tomtom-international/commisery-action@v3
