@@ -194,9 +194,10 @@ async function run(): Promise<void> {
         let total = await getResultsFromPaths(paths)
 
         /* Create and write the output */
-        if (flakyTestsJsonPath) {
-            total = markFlakyTests(total, flakyTestsJsonPath)
-        }
+        total = markFlakyTests(total, flakyTestsJsonPath)
+        const hasFlakyTests = total.suites.some(suite =>
+            suite.cases.some(testCase => testCase.flaky)
+        )
 
         let output = dashboardSummary(
             total,
@@ -211,7 +212,7 @@ async function run(): Promise<void> {
             output += dashboardResults(
                 total,
                 show,
-                flakyTestsJsonPath !== "",
+                hasFlakyTests,
                 maxSummaryLength,
                 current_length
             )
