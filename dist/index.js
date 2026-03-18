@@ -235,7 +235,7 @@ function isFlakyFromExecutionHistory(runCount, failCount) {
     if (!runCount || !failCount) {
         return false;
     }
-    return failCount > 0 && failCount < runCount;
+    return runCount > 0 && failCount > 0 && failCount < runCount;
 }
 function markFlakyTests(result, flakyTestsJsonPath) {
     if (flakyTestsJsonPath && !fs.existsSync(flakyTestsJsonPath)) {
