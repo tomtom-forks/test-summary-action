@@ -146,6 +146,36 @@ describe("dashboard", async () => {
         expect(count).to.equal(2) // Once comes from the footer
     })
 
+    it("includes flaky marker without ticket for mixed pass/fail case", async () => {
+        const result: TestResult = {
+            counts: { passed: 1, failed: 1, skipped: 0 },
+            suites: [
+                {
+                    name: "TestSuite1",
+                    cases: [
+                        {
+                            status: TestStatus.Fail,
+                            name: "flaky-test-not-in-flaky-json",
+                            description: "test",
+                            flaky: true,
+                            run_count: 2,
+                            fail_count: 1
+                        }
+                    ]
+                }
+            ]
+        }
+
+        const actual = dashboardResults(result, TestStatus.Fail, true)
+
+        expect(actual).contains("[FLAKY]")
+        expect(actual).contains("flaky-test-not-in-flaky-json: test")
+        expect(actual).not.contains(
+            `<a href="https://jira.example.com/browse/TEST-1" target="_blank">[FLAKY]</a> `
+        )
+        expect(actual).contains("(1/2 attempts failed)")
+    })
+
     it("removes details sections to adjust to maxLength", async () => {
         const result: TestResult = {
             counts: { passed: 0, failed: 1, skipped: 0 },
